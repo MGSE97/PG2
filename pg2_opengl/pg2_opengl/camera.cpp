@@ -40,11 +40,6 @@ Vector3 Camera::view_from() const
 	return view_from_;
 }
 
-Matrix4x4 Camera::M_c_w() const
-{
-	return M_c_w_;
-}
-
 float Camera::focal_length() const
 {
 	return f_y_;
@@ -67,9 +62,9 @@ void Camera::Update()
 	x_c.Normalize();
 	Vector3 y_c = z_c.CrossProduct( x_c );
 	y_c.Normalize();
-	M_c_w_ = Matrix4x4(x_c, y_c, z_c, view_from_);
+	MW = Matrix4x4(x_c, y_c, z_c, view_from_);
 
-	SetMatrix4x4(shader_program_, M_c_w_.data(), "mvp");
+	SetMatrix4x4(shader_program_, MW.data(), "mvp");
 }
 
 void Camera::Update2()
@@ -83,9 +78,26 @@ void Camera::Update2()
 	x_c.Normalize();
 	Vector3 y_c = z_c.CrossProduct(x_c);
 	y_c.Normalize();
-	M_c_w_ = Matrix4x4(x_c, y_c, z_c, view_from_);
+	MW = Matrix4x4(x_c, y_c, z_c, view_from_);
 
-	SetMatrix4x4(shader_program_, (M_c_w_*M_c_m_).data(), "mvp");
+	double a = (f_y_ + n_y_) / (n_y_ - f_y_);
+	double b = (2 * f_y_ * n_y_) / (n_y_ - f_y_);
+	MM = Matrix4x4(
+		n_y_, 0, 0, 0,
+		0, n_y_, 0, 0,
+		0, 0, a, b,
+		0, 0, -1, 0);
+
+	MN = Matrix4x4(
+		2.0 / width_, 0, 0, 0,
+		0, 2.0 / height_, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1
+	);
+
+	MP = MN * MM;
+
+	SetMatrix4x4(shader_program_, (MW*MP).data(), "mvp");
 }
 
 void Camera::MoveForward( const float dt )

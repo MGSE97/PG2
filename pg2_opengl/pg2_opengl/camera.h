@@ -24,7 +24,6 @@ public:
 		const Vector3 view_from, const Vector3 view_at, GLuint shader_program);
 
 	Vector3 view_from() const;
-	Matrix4x4 M_c_w() const;
 	float focal_length() const;
 
 	void set_fov_y(const float fov_y);
@@ -35,6 +34,11 @@ public:
 	void MoveForward(const float dt);
 
 	GLuint shader_program_;
+
+	Matrix4x4 MW; // view matrix from CS -> WS	
+	Matrix4x4 MP; // projection matrix from CS -> WS	
+	Matrix4x4 MM; // M matrix from CS -> WS	
+	Matrix4x4 MN; // N matrix from CS -> WS	
 private:
 	int width_{ 640 }; // image width (px)
 	int height_{ 480 };  // image height (px)
@@ -48,9 +52,6 @@ private:
 
 	float f_y_{ 1.0f }; // focal far lenght (px)
 	float n_y_{ 0.0f }; // focal near lenght (px)
-
-	Matrix4x4 M_c_w_; // view matrix from CS -> WS	
-	Matrix4x4 M_c_m_; // view matrix from CS -> WS	
 };
 
 #endif
