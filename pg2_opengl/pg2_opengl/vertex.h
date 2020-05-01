@@ -26,8 +26,9 @@ public:
 	Vector3 color; /*!< RGB barva vertexu <0, 1>^3. */
 	Coord2f texture_coords[NO_TEXTURE_COORDS]; /*!< Texturovací souøadnice. */
 	Vector3 tangent; /*!< První osa souøadného systému tangenta-bitangenta-normála. */
+	int32_t materialIdx;
 
-	char pad[8]; // doplnìní na 64 bytù, mìlo by to mít alespoò 4 byty, aby se sem vešel 32-bitový ukazatel
+	char pad[4]; // doplnìní na 64 bytù, mìlo by to mít alespoò 4 byty, aby se sem vešel 32-bitový ukazatel
 
 	//! Výchozí konstruktor.
 	/*!

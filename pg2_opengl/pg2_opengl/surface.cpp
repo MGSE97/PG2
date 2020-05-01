@@ -81,3 +81,11 @@ Material * Surface::get_material() const
 {
 	return material_;
 }
+
+int Surface::CopyTriangles(Triangle* triangles, int offset) {
+	for (int i = 0; i < n_; i++) {
+		triangles_[i].setMaterialIndex(material_->matIdx);
+	}
+	memcpy(triangles + offset, triangles_, no_triangles() * sizeof(Triangle));
+	return no_triangles();
+}

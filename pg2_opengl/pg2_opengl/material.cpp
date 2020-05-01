@@ -165,3 +165,11 @@ Color3f Material::emission( const Coord2f * tex_coord ) const
 {
 	return emission_;
 }
+
+GLMaterial Material::CreateStruct() {
+	GLMaterial mat = {};
+	mat.diffuse = diffuse_;
+	mat.specular = specular_;
+	mat.ambient = ambient_;
+	return mat;
+}

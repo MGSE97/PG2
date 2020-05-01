@@ -48,6 +48,8 @@ public:
 	*/	
 	Surface * surface();
 
+	void setMaterialIndex(int matIdx);
+
 private:
 	Vertex vertices_[3]; /*!< Vrcholy trojúhelníka. Nic jiného tu nesmí být, jinak padne VBO v OpenGL! */	
 };

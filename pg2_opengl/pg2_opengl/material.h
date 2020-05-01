@@ -27,6 +27,17 @@
 /* types of shaders */
 enum class Shader : char { NORMAL = 1, LAMBERT = 2, PHONG = 3, GLASS = 4, PBR = 5, MIRROR = 6, TS = 7, CT = 8 };
 
+#pragma pack(push, 1)
+struct GLMaterial {
+	Color3f diffuse;	//12
+	char p0[4];
+	Color3f specular;	//12
+	char p1[4];
+	Color3f ambient;	//12
+	char p2[4];
+};
+#pragma pack(pop)
+
 /*! \class Material
 \brief A simple material.
 
@@ -109,6 +120,9 @@ public:
 
 	Color3f emission( const Coord2f * tex_coord = nullptr ) const;
 
+	inline void setIndex(int idx) { matIdx = idx; };
+
+	GLMaterial CreateStruct();
 public:
 	Color3f ambient_; /*!< RGB barva prostøedí \f$\left<0, 1\right>^3\f$. */
 	Color3f diffuse_; /*!< RGB barva rozptylu \f$\left<0, 1\right>^3\f$. */
@@ -128,6 +142,7 @@ public:
 	static const char kOpacityMapSlot; /*!< Èíslo slotu transparentní textury. */
 	static const char kRoughnessMapSlot; /*!< Èíslo slotu textury drsnosti. */
 	static const char kMetallicnessMapSlot; /*!< Èíslo slotu textury kovovosti. */
+	int matIdx;
 
 private:
 	Texture * textures_[NO_TEXTURES]; /*!< Pole ukazatelù na textury. */

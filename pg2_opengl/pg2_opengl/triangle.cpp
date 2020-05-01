@@ -8,7 +8,7 @@ Triangle::Triangle( const Vertex & v0, const Vertex & v1, const Vertex & v2, Sur
 	vertices_[2] = v2;
 	
 	// ukazatel na surface schováme (!pokud se tam vleze!) do paddingu prvního vertexu
-	*reinterpret_cast<Surface **>( &vertices_[0].pad ) = surface;	
+	//*reinterpret_cast<Surface **>(vertices_[0].pad) = surface;	
 }
 
 Vertex Triangle::vertex( const int i )
@@ -19,4 +19,10 @@ Vertex Triangle::vertex( const int i )
 Surface * Triangle::surface()
 {	
 	return *reinterpret_cast<Surface **>( vertices_[0].pad ); // FIX: chybí verze pro 64bit
+}
+
+void Triangle::setMaterialIndex(int matIdx) {
+	vertices_[0].materialIdx = matIdx;
+	vertices_[1].materialIdx = matIdx;
+	vertices_[2].materialIdx = matIdx;
 }

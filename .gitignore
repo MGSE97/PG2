@@ -31,6 +31,7 @@
 *.out
 *.app
 **/x64/Debug
+pg2_opengl/pg2_opengl/x64/Debug
 **/.vs
 *.dll
 *.db

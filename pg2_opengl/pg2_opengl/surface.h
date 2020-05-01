@@ -85,6 +85,10 @@ public:
 	*/
 	Material * get_material() const;
 
+	inline int triangles_count() const {	return n_;	}
+
+	int CopyTriangles(Triangle* triangles, int offset);
+
 protected:
 
 private:
