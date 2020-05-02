@@ -31,13 +31,12 @@ public:
 	void set_fov_y(const float fov_y);
 
 	void Update();
-	void Update2();
 
 	void MoveForward(const float dt);
 
 	GLuint shader_program_;
 
-	Matrix4x4 MW; // view matrix from CS -> WS	
+	Matrix4x4 MV; // view matrix from CS -> WS	
 	Matrix4x4 MP; // projection matrix from CS -> WS	
 	Matrix4x4 MM; // M matrix from CS -> WS	
 	Matrix4x4 MN; // N matrix from CS -> WS	

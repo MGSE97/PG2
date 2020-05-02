@@ -3,11 +3,12 @@
 #include "utils.h"
 #include "objloader.h"
 #include "Model.h"
+#include "light.h"
 
 class Renderer
 {
 public:
-	Renderer(const int width, const int height, const float fov_y, const Vector3 view_from, const Vector3 view_at);
+	Renderer(const int width, const int height, const float fov_y, const Vector3 view_from, const Vector3 view_at, const Vector3 light_pos);
 	~Renderer();
 
 	void Prepare();
@@ -16,6 +17,7 @@ public:
 	void Draw();
 
 	Camera camera;
+	Light light;
 	Model* model;
 	GLFWwindow* window;
 private:

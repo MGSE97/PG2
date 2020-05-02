@@ -1,11 +1,12 @@
 #include "pch.h"
 #include "Renderer.h"
 
-Renderer::Renderer(const int width, const int height, const float fov_y, const Vector3 view_from, const Vector3 view_at)
+Renderer::Renderer(const int width, const int height, const float fov_y, const Vector3 view_from, const Vector3 view_at, const Vector3 light_pos)
 {
 	Prepare();
 	PrepareShaders();
 	camera = Camera(width, height, fov_y, 0.8f, 1000.f, view_from, view_at, shader_program_);
+	light = Light(light_pos);
 }
 
 Renderer::~Renderer()
@@ -34,6 +35,7 @@ void Renderer::Draw()
 {
 	/*glUseProgram(shader_program_);
 	camera.Update2();*/
+	light.Use(shader_program_, "light");
 	model->Bind();
 }
 

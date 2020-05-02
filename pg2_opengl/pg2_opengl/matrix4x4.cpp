@@ -13,7 +13,18 @@ Matrix4x4::Matrix4x4()
 	}
 }
 
-Matrix4x4::Matrix4x4( const float m00, const float m01, const float m02, const float m03, 
+Matrix4x4::Matrix4x4(const float value)
+{
+	for (int r = 0; r < 4; ++r)
+	{
+		for (int c = 0; c < 4; ++c)
+		{
+			data_[c + r * 4] = ((r == c) ? value : 0.0f);
+		}
+	}
+}
+
+Matrix4x4::Matrix4x4( const float m00, const float m01, const float m02, const float m03,
 		const float m10, const float m11, const float m12, const float m13, 
 		const float m20, const float m21, const float m22, const float m23,
 		const float m30, const float m31, const float m32, const float m33 )

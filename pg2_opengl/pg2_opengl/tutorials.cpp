@@ -259,20 +259,20 @@
 #define CUBE 1
 #define PIECE 2
 
-#define SCENE AVANGER
+#define SCENE PIECE
 int tutorial_2(const int width, const int height)
 {
 #if SCENE == AVANGER
 	// Avanger
-	Renderer renderer(width, height, deg2rad(45.0), Vector3(200, -150, 150), Vector3(0, 0, 35));
+	Renderer renderer(width, height, deg2rad(45.0), Vector3(200, -150, 150), Vector3(0, 0, 35), Vector3(200, 200, 200));
 	renderer.LoadScene("../../data/6887/6887_allied_avenger_gi2.obj");
 #elif SCENE == CUBE
 	// Cube
-	Renderer renderer(width, height, deg2rad(45.0), Vector3(5, 5, 5), Vector3(0, 0, 0));
+	Renderer renderer(width, height, deg2rad(45.0), Vector3(5, 5, 5), Vector3(0, 0, 0), Vector3(200, 200, 200));
 	renderer.LoadScene("../../data/cube/cube.obj");
 #elif SCENE == PIECE
 	// Piece
-	Renderer renderer(width, height, deg2rad(45.0), Vector3(25, -25, 40), Vector3(0, 0, 4));
+	Renderer renderer(width, height, deg2rad(45.0), Vector3(25, -25, 40), Vector3(0, 0, 4), Vector3(200, 200, 200));
 	renderer.LoadScene("../../data/piece/piece_02.obj");
 #endif
 
@@ -318,7 +318,7 @@ int tutorial_2(const int width, const int height)
 				renderer.camera.view_from_.z--;
 		}
 		printf("\r%d > %f %f %f, %f %f %f", i, renderer.camera.view_at_.x, renderer.camera.view_at_.y, renderer.camera.view_at_.z, renderer.camera.view_from_.x, renderer.camera.view_from_.y, renderer.camera.view_from_.z);
-		renderer.camera.Update2();
+		renderer.camera.Update();
 
 		// Drawing loop
 		glClearColor( 0.2f, 0.3f, 0.3f, 1.0f ); // state setting function

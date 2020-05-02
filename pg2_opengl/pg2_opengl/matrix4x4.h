@@ -19,6 +19,13 @@ public:
 	*/
 	Matrix4x4();
 
+
+	//! Výchozí konstruktor.
+	/*!
+	Inicializace na matici identity.
+	*/
+	Matrix4x4(const float value);
+
 	//! Výchozí konstruktor.
 	/*!
 	Inicializace matice zadanými hodnotami. První index oznaèuje øádek, druhý index patøí sloupci.

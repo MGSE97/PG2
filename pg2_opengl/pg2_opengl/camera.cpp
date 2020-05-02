@@ -33,7 +33,7 @@ Camera::Camera(const int width_, const int height_, const float fov_x, const flo
 	n_y_ = near_y;
 	f_y_ = far_y;
 
-	Update2();
+	Update();
 }
 
 /*Vector3 Camera::view_from() const
@@ -55,40 +55,8 @@ void Camera::set_fov_y( const float fov_y )
 
 void Camera::Update()
 {
-	f_y_ = height / ( 2.0f * tanf( fov_y_ * 0.5f ) );
-
-	Vector3 z_c = view_from_ - view_at_;
-	z_c.Normalize();
-	Vector3 x_c = up_.CrossProduct( z_c );
-	x_c.Normalize();
-	Vector3 y_c = z_c.CrossProduct( x_c );
-	y_c.Normalize();
-	MW = Matrix4x4(x_c, y_c, z_c, view_from_);
-
-	SetMatrix4x4(shader_program_, MW.data(), "mvp");
-}
-
-void Camera::Update2()
-{
 	double a = (f_y_ + n_y_) / (n_y_ - f_y_);
 	double b = (2.0 * f_y_ * n_y_) / (n_y_ - f_y_);
-
-	/*double h = 2.0 * n_y_ * tanf(fov_y_ * 0.5f);
-	double w = h * (width / (float)height);
-	MM = Matrix4x4(
-		n_y_, 0, 0, 0,
-		0, n_y_, 0, 0,
-		0, 0, a, b,
-		0, 0, -1, 0);
-
-	MN = Matrix4x4(
-		2.0 / w, 0, 0, 0,
-		0, 2.0 / h, 0, 0,
-		0, 0, 1, 0,
-		0, 0, 0, 1
-	);
-
-	MP = MN * MM;*/
 
 	double aspect = width / (float)height;
 	double tan_fov_x = tan(fov_x_ / 2.0);
@@ -99,17 +67,14 @@ void Camera::Update2()
 		0, 0, -1, 0
 	);
 
-	//float aspect = width / height;
-	//auto f_y = height / (2.0f * tanf(fov_y_ * 0.5f));
-
 	Vector3 z_c = view_from_ - view_at_;
 	z_c.Normalize();
 	Vector3 x_c = up_.CrossProduct(z_c);
 	x_c.Normalize();
 	Vector3 y_c = z_c.CrossProduct(x_c);
 	y_c.Normalize();
-	MW = Matrix4x4(x_c, y_c, z_c, view_from_);
-	MW.EuclideanInverse();
+	MV = Matrix4x4(x_c, y_c, z_c, view_from_);
+	MV.EuclideanInverse();
 
 	// move to model
 	Matrix4x4 mm(
@@ -118,7 +83,8 @@ void Camera::Update2()
 		0.f, 0.f, 1.f, 0.f,
 		0.f, 0.f, 0.f, 1.f);
 	
-	SetMatrix4x4(shader_program_, (MP*MW*mm).data(), "mvp");
+	SetMatrix4x4(shader_program_, (MP*MV*mm).data(), "pv");
+	SetVector3(shader_program_, view_from_.data, "eye");
 }
 
 void Camera::MoveForward( const float dt )

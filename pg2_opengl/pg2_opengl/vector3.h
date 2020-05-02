@@ -53,6 +53,15 @@ public:
 	*/
 	Vector3( const float x, const float y, const float z ) : x( x ), y( y ), z( z ) { }
 
+	//! Obecný konstruktor.
+	/*!
+	Inicializuje složky vektoru podle zadaných hodnot parametrù,
+	\f$\mathbf{v}=(x,y,z)\f$.
+
+	\param a složka vektoru.
+	*/
+	Vector3(const float a) : x(a), y(a), z(a) { }
+
 	//! Konstruktor z pole.
 	/*!
 	Inicializuje složky vektoru podle zadaných hodnot pole,
