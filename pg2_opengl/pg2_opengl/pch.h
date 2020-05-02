@@ -16,6 +16,12 @@
 #include <assert.h>
 #include <functional>
 
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
+
 // Glad - multi-Language GL/GLES/EGL/GLX/WGL loader-generator based on the official specs
 #include <glad/glad.h>
 

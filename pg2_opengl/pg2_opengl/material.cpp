@@ -166,10 +166,63 @@ Color3f Material::emission( const Coord2f * tex_coord ) const
 	return emission_;
 }
 
+void CreateBindlessTexture(GLuint64& handle, Texture* texture)
+{
+
+	GLuint texId;
+	glCreateTextures(GL_TEXTURE_2D, 1, &texId);
+	glBindTexture(GL_TEXTURE_2D, texId); // bind empty texture object to the target
+	
+	// set the texture wrapping/filtering options
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// copy data from the host buffer
+	if (!texture)
+	{
+		GLubyte data[] = { 255, 255, 255, 255 }; // opaque white
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_BGRA, GL_UNSIGNED_BYTE, data);
+	}
+	else {
+		if (texture->bpp() == 3)
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, texture->width(), texture->height(), 0, GL_BGR, GL_UNSIGNED_BYTE, texture->data());
+		else if (texture->bpp() == 4)
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, texture->width(), texture->height(), 0, GL_BGRA, GL_UNSIGNED_BYTE, texture->data());
+	}
+	
+	// Black/white checkerboard
+	/*float pixels[] = {
+		0.0f, 0.0f, 0.0f,   1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,   0.0f, 0.0f, 0.0f
+	};
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_FLOAT, pixels);*/
+	glGenerateMipmap(GL_TEXTURE_2D); 
+	handle = glGetTextureHandleARB(texId); // produces a handle representing the texture in a shader function
+	glMakeTextureHandleResidentARB(handle);
+	/*handle = glGetTextureHandleNV(texId); // produces a handle representing the texture in a shader function
+	glMakeTextureHandleResidentNV(handle);*/
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 GLMaterial Material::CreateStruct() {
 	GLMaterial mat = {};
 	mat.diffuse = diffuse_;
 	mat.specular = specular_;
 	mat.ambient = ambient_;
+	mat.emission = emission_;
+
+	mat.ior = ior;
+	mat.metallicness = metallicness;
+	mat.reflectivity = reflectivity;
+	mat.roughness = roughness_;
+	mat.shininess = shininess;
+
+	CreateBindlessTexture(mat.tex_diffuse, textures_[kDiffuseMapSlot]);
+	CreateBindlessTexture(mat.tex_normal, textures_[kNormalMapSlot]);
+	CreateBindlessTexture(mat.tex_rma, textures_[kRoughnessMapSlot]);
+	
 	return mat;
 }

@@ -141,6 +141,16 @@ int Texture::height() const
 	return height_;
 }
 
+BYTE* Texture::data() const
+{
+	return data_;
+}
+
+int Texture::bpp() const
+{
+	return pixel_size_;
+}
+
 void Texture::CopyTo( BYTE * data, const int pixel_size )
 {
 	if ( pixel_size == pixel_size_ )

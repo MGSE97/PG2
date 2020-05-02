@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vector3.h"
+#include <FreeImage.h>
 
 /* a single vertex position structure matching Embree format */
 struct Vertex3f
@@ -104,7 +105,7 @@ struct Color3f
 
 	float max_value() const;
 
-	template<typename T> static Color3f make_from_bgr( BYTE * p )
+	template<typename T> static Color3f make_from_bgr( BYTE* p )
 	{
 		return Color3f{ float( ( ( T* )( p ) )[2] ), float( ( ( T* )( p ) )[1] ), float( ( ( T* )( p ) )[0] ) };
 	}

@@ -22,6 +22,8 @@ public:
 
 	int width() const;
 	int height() const;
+	BYTE* data() const;
+	int bpp() const;
 
 	void CopyTo( BYTE * data, const int pixel_size = 3);
 

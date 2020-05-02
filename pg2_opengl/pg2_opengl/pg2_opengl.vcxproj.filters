@@ -160,10 +160,28 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="basic_shader.vert">
+    <None Include="shaders\basic_shader.frag">
       <Filter>Source Files\opengl</Filter>
     </None>
-    <None Include="basic_shader.frag">
+    <None Include="shaders\basic_shader.vert">
+      <Filter>Source Files\opengl</Filter>
+    </None>
+    <None Include="shaders\lambert_shader.frag">
+      <Filter>Source Files\opengl</Filter>
+    </None>
+    <None Include="shaders\lambert_shader.vert">
+      <Filter>Source Files\opengl</Filter>
+    </None>
+    <None Include="shaders\normal_shader.frag">
+      <Filter>Source Files\opengl</Filter>
+    </None>
+    <None Include="shaders\normal_shader.vert">
+      <Filter>Source Files\opengl</Filter>
+    </None>
+    <None Include="shaders\triangle_shader.frag">
+      <Filter>Source Files\opengl</Filter>
+    </None>
+    <None Include="shaders\triangle_shader.vert">
       <Filter>Source Files\opengl</Filter>
     </None>
   </ItemGroup>

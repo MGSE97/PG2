@@ -225,8 +225,9 @@ GLint Renderer::CheckProgram(const GLenum program)
 
 void Renderer::PrepareShaders()
 {
-	std::string shader = "basic";
-	//std::string shader = "shaders/basic";
+	std::string shader = "shaders/basic";
+	//std::string shader = "shaders/lambert";
+	//std::string shader = "shaders/normal";
 	vertex_shader_ = glCreateShader(GL_VERTEX_SHADER);
 	const char* vertex_shader_source = LoadShader((shader+"_shader.vert").c_str());
 	glShaderSource(vertex_shader_, 1, &vertex_shader_source, nullptr);

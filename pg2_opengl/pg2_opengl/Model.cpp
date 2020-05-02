@@ -39,24 +39,6 @@ Model::Model(std::vector<Surface*> surfaces, std::vector<Material*> materials)
 
 	glGenBuffers(1, &vbo_);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-	/*float* arr = (float*)triangles;
-	for (int i = 0; i < offset_vertices; i++)
-		printf("%f %f %f, %f %f %f, %f %f %f, %f %f, %f %f %f, %d\n", 
-			arr[i * sizeof(Vertex)/sizeof(float)], 
-			arr[i * sizeof(Vertex) / sizeof(float) + 1],
-			arr[i * sizeof(Vertex) / sizeof(float) + 2],
-			arr[i * sizeof(Vertex) / sizeof(float) + 3],
-			arr[i * sizeof(Vertex) / sizeof(float) + 4],
-			arr[i * sizeof(Vertex) / sizeof(float) + 5],
-			arr[i * sizeof(Vertex) / sizeof(float) + 6],
-			arr[i * sizeof(Vertex) / sizeof(float) + 7],
-			arr[i * sizeof(Vertex) / sizeof(float) + 8],
-			arr[i * sizeof(Vertex) / sizeof(float) + 9],
-			arr[i * sizeof(Vertex) / sizeof(float) + 10],
-			arr[i * sizeof(Vertex) / sizeof(float) + 11],
-			arr[i * sizeof(Vertex) / sizeof(float) + 12],
-			arr[i * sizeof(Vertex) / sizeof(float) + 13],
-			arr[i * sizeof(Vertex) / sizeof(float) + 14]);*/
 	glBufferData(GL_ARRAY_BUFFER, offset_vertices * sizeof(Vertex), triangles, GL_STATIC_DRAW);
 
 	// vertex position
@@ -84,7 +66,7 @@ Model::Model(std::vector<Surface*> surfaces, std::vector<Material*> materials)
 	glGenBuffers(1, &ssboMaterials);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboMaterials);
 	const GLsizeiptr gl_materials_size = sizeof(GLMaterial) * materials.size();
-	glBufferData(GL_SHADER_STORAGE_BUFFER, gl_materials_size, glMaterials, GL_STATIC_DRAW);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, gl_materials_size, glMaterials, GL_DYNAMIC_DRAW);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboMaterials);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
