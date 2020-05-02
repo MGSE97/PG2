@@ -7,20 +7,14 @@ flat in int matIdx;
 out vec4 FragColor;
 
 struct Material {
-	vec3 diffuse;
-	vec3 specular;
-	vec3 ambient;
-	vec3 emission;
+	vec3 diffuse; // (1,1,1) or albedo
+	uint64_t tex_diffuse; // albedo texture
 	
-	float shininess;
-	float roughness;
-	float metallicness;
-	float reflectivity;
-	float ior;
-
-    uint64_t tex_diffuse;
-	uint64_t tex_normal;
-	uint64_t tex_rma;
+	vec3 rma; // (1,1,1) or (roughness, metalness, 1)
+	uint64_t tex_rma; // rma texture
+	
+	vec3 normal; // (1,1,1) or (0,0,1)
+	uint64_t tex_normal; // bump texture
 };
 
 layout (std430, binding = 0) readonly buffer Materials {

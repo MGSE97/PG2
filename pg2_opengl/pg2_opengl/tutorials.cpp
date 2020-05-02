@@ -259,7 +259,7 @@
 #define CUBE 1
 #define PIECE 2
 
-#define SCENE PIECE
+#define SCENE AVANGER
 int tutorial_2(const int width, const int height)
 {
 #if SCENE == AVANGER
