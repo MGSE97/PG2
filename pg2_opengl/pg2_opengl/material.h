@@ -37,9 +37,11 @@ struct GLMaterial {
 	GLbyte pad3[4];
 	Color3f emission;	// 12
 	GLbyte pad4[4];
+	Color3f rma;		// 12
+	GLbyte pad5[4];
 						// 48
 
-	float shininess;	// 4
+	/*float shininess;	// 4
 	GLbyte pad5[12];
 	float roughness;	// 4
 	GLbyte pad6[12];
@@ -48,7 +50,7 @@ struct GLMaterial {
 	float reflectivity;	// 4
 	GLbyte pad8[12];
 	float ior;			// 4
-	GLbyte pad9[12];
+	GLbyte pad9[12];*/
 						// 20
 	GLuint64 tex_diffuse;	// 8
 	GLbyte pad10[8];

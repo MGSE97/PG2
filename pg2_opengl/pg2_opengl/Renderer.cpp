@@ -119,6 +119,7 @@ int Renderer::InitGL()
 	check_gl(NULL);
 
 	glEnable(GL_MULTISAMPLE);
+	//glEnable(GL_FRAMEBUFFER_SRGB);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
