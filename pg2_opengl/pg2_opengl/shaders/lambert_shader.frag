@@ -1,10 +1,19 @@
 #version 450 core
 #extension GL_ARB_bindless_texture : require
-#extension GL_ARB_gpu_shader_int64 : require // uint64_t
+#extension GL_ARB_gpu_shader_int64 : require
 
+#define PI 3.14159265359
+uniform vec3 light;
+uniform vec3 eye;
+
+in vec2 tex;
+in vec3 norm;
+in mat3 TBN;
 flat in int matIdx;
 
 out vec4 FragColor;
+
+layout (bindless_sampler) uniform;
 
 struct Material {
 	vec3 diffuse; // (1,1,1) or albedo
@@ -23,5 +32,15 @@ layout (std430, binding = 0) readonly buffer Materials {
 
 void main( void )
 {
-	FragColor = vec4(materials[matIdx].diffuse.rgb, 1.f);
+	vec3 diffuse;
+	if(materials[matIdx].tex_diffuse > 0)
+		diffuse = texture(sampler2D(materials[matIdx].tex_diffuse), tex).rgb;
+	else
+		diffuse = materials[matIdx].diffuse.rgb;
+
+	vec3 normal = norm;
+	if(materials[matIdx].tex_normal > 0)
+		normal = TBN * normalize(texture(sampler2D(materials[matIdx].tex_normal), tex).rgb * 2.0 - 1.0);
+
+	FragColor = vec4(diffuse * max(dot(normal, light), 0), 1);
 }

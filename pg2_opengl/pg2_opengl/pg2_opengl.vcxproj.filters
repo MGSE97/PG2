@@ -172,12 +172,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\basic_shader.frag">
-      <Filter>Source Files\opengl</Filter>
-    </None>
-    <None Include="shaders\basic_shader.vert">
-      <Filter>Source Files\opengl</Filter>
-    </None>
     <None Include="shaders\lambert_shader.frag">
       <Filter>Source Files\opengl</Filter>
     </None>
@@ -194,6 +188,30 @@
       <Filter>Source Files\opengl</Filter>
     </None>
     <None Include="shaders\triangle_shader.vert">
+      <Filter>Source Files\opengl</Filter>
+    </None>
+    <None Include="shaders\shadow_shader.frag">
+      <Filter>Source Files\opengl</Filter>
+    </None>
+    <None Include="shaders\shadow_shader.vert">
+      <Filter>Source Files\opengl</Filter>
+    </None>
+    <None Include="shaders\pbr_shader.frag">
+      <Filter>Source Files\opengl</Filter>
+    </None>
+    <None Include="shaders\pbr_shader.vert">
+      <Filter>Source Files\opengl</Filter>
+    </None>
+    <None Include="shaders\pbr_shadow_shader.frag">
+      <Filter>Source Files\opengl</Filter>
+    </None>
+    <None Include="shaders\pbr_shadow_shader.vert">
+      <Filter>Source Files\opengl</Filter>
+    </None>
+    <None Include="shaders\shadow_view_shader.frag">
+      <Filter>Source Files\opengl</Filter>
+    </None>
+    <None Include="shaders\shadow_view_shader.vert">
       <Filter>Source Files\opengl</Filter>
     </None>
   </ItemGroup>

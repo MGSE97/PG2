@@ -7,7 +7,8 @@ void SetMatrix4x4( const GLuint program, const GLfloat * data, const char * matr
 
 	if ( location == -1 )
 	{
-		printf( "Matrix '%s' not found in active shader.\n", matrix_name );
+		if(VERBOSE)
+			printf( "Matrix '%s' not found in active shader.\n", matrix_name );
 	}
 	else
 	{
@@ -21,10 +22,26 @@ void SetVector3(const GLuint program, const GLfloat* data, const char* vector_na
 
 	if (location == -1)
 	{
-		printf("Vector '%s' not found in active shader.\n", vector_name);
+		if (VERBOSE)
+			printf("Vector '%s' not found in active shader.\n", vector_name);
 	}
 	else
 	{
 		glUniform3fv(location, 1, data);
 	}
 }
+
+void SetSampler(const GLuint program, GLenum texture_unit, const char* sampler_name) 
+{
+	const GLint location = glGetUniformLocation(program, sampler_name);
+	if (location == -1) 
+	{
+		if (VERBOSE)
+			printf("Texture sampler '%s' not found in active shader.\n", sampler_name);
+	}
+	else 
+	{
+		glUniform1i(location, texture_unit);
+	}
+}
+

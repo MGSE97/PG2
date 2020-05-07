@@ -4,6 +4,8 @@
 #define NOMINMAX
 #define _CRT_SECURE_NO_WARNINGS
 
+#define VERBOSE true
+
 // std libs
 #include <stdio.h>
 #include <cstdlib>

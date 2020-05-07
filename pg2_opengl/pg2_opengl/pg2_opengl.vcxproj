@@ -212,12 +212,18 @@
     <ClCompile Include="vertex.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\basic_shader.frag" />
-    <None Include="shaders\basic_shader.vert" />
+    <None Include="shaders\pbr_shader.frag" />
+    <None Include="shaders\pbr_shader.vert" />
     <None Include="shaders\lambert_shader.frag" />
     <None Include="shaders\lambert_shader.vert" />
     <None Include="shaders\normal_shader.frag" />
     <None Include="shaders\normal_shader.vert" />
+    <None Include="shaders\pbr_shadow_shader.frag" />
+    <None Include="shaders\pbr_shadow_shader.vert" />
+    <None Include="shaders\shadow_shader.frag" />
+    <None Include="shaders\shadow_shader.vert" />
+    <None Include="shaders\shadow_view_shader.frag" />
+    <None Include="shaders\shadow_view_shader.vert" />
     <None Include="shaders\triangle_shader.frag" />
     <None Include="shaders\triangle_shader.vert" />
   </ItemGroup>

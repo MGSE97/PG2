@@ -1,12 +1,23 @@
 #include "pch.h"
 #include "Renderer.h"
+#include "glutils.h"
 
-Renderer::Renderer(const int width, const int height, const float fov_y, const Vector3 view_from, const Vector3 view_at, const Vector3 light_pos)
+
+Renderer::Renderer(const int width, const int height, const float fov_x, const Vector3 view_from, const Vector3 view_at, const Vector3 light_pos)
 {
+	//std::string shader = "shaders/basic";
+	//std::string shader = "shaders/pbr";
+	std::string shader = "shaders/pbr_shadow";
+	//std::string shader = "shaders/shadow_view";
+	//std::string shader = "shaders/lambert";
+	//std::string shader = "shaders/normal";
+
 	Prepare();
-	PrepareShaders();
-	camera = Camera(width, height, fov_y, 0.8f, 1000.f, view_from, view_at, shader_program_);
+	PrepareShaders(&shader_program_, &vertex_shader_, &fragment_shader_, shader);
+	camera = Camera(width, height, fov_x, 0.8f, 10000.f, view_from, view_at, shader_program_);
 	light = Light(light_pos);
+	light.SetShadows(view_at, shadow_width_, shadow_height_, 0.8f, 10000.f, fov_x);
+	light.Update();
 }
 
 Renderer::~Renderer()
@@ -14,6 +25,13 @@ Renderer::~Renderer()
 	glDeleteShader(vertex_shader_);
 	glDeleteShader(fragment_shader_);
 	glDeleteProgram(shader_program_);
+
+	if (use_shadows_)
+	{
+		glDeleteShader(shadow_vertex_shader_);
+		glDeleteShader(shadow_fragment_shader_);
+		glDeleteProgram(shadow_shader_program_);
+	}
 
 	glfwTerminate();
 }
@@ -31,10 +49,41 @@ void Renderer::LoadScene(const char* file_name)
 	model = new Model(surfaces, materials);
 }
 
+void Renderer::PrepareShadows()
+{
+	if (use_shadows_)
+	{
+		// --- first pass ---
+		// set the shadow shader program and the viewport to match the size of the depth map
+		glUseProgram(shadow_shader_program_);
+		glViewport(0, 0, shadow_width_, shadow_height_);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo_shadow_map_);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		
+		// set up the light source through the MLP matrix
+		SetMatrix4x4(shadow_shader_program_, light.MLP.data(), "mlp");
+		
+		// draw the scene
+		model->Bind();
+
+		// set back the main shader program and the viewport
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, camera.width, camera.height);
+		glUseProgram(shader_program_);
+
+		// Show as light
+		/*camera.view_from_ = light.position_;
+		camera.view_at_ = light.target_;
+		camera.Update();*/
+	}
+}
+
 void Renderer::Draw()
 {
 	/*glUseProgram(shader_program_);
 	camera.Update2();*/
+	if (use_shadows_)
+		DrawShadows();
 	light.Use(shader_program_, "light");
 	model->Bind();
 }
@@ -54,11 +103,6 @@ void GLAPIENTRY gl_callback(GLenum source, GLenum type, GLuint id, GLenum severi
 		type, severity, message);
 }
 
-/* invoked when window is resized */
-void framebuffer_resize_callback(GLFWwindow* window, int width, int height)
-{
-	glViewport(0, 0, width, height);
-}
 
 /* OpenGL check state */
 bool check_gl(const GLenum error)
@@ -99,7 +143,6 @@ int Renderer::InitGL()
 		return EXIT_FAILURE;
 	}
 
-	glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
 	glfwMakeContextCurrent(window);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -179,6 +222,18 @@ char* Renderer::LoadShader(const char* file_name)
 	return shader;
 }
 
+void Renderer::DrawShadows()
+{
+	/*light.SetShadows(camera.view_at_, shadow_width_, shadow_height_, 0.8f, 1000.f, camera.fov_x_);
+	light.Update();*/
+	// everything is the same except this line
+	SetMatrix4x4(shader_program_, light.MLP.data(), "mlp");
+	// and also don't forget to set the sampler of the shadow map before entering rendering loop
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, tex_shadow_map_);
+	SetSampler(shader_program_, 0, "shadow_map");
+}
+
 /* check shader for completeness */
 GLint Renderer::CheckShader(const GLenum shader)
 {
@@ -226,30 +281,54 @@ GLint Renderer::CheckProgram(const GLenum program)
 	return status;
 }
 
-void Renderer::PrepareShaders()
+void Renderer::PrepareShaders(GLuint* program, GLuint* vertex, GLuint* fragment, std::string shader)
 {
-	std::string shader = "shaders/basic";
-	//std::string shader = "shaders/lambert";
-	//std::string shader = "shaders/normal";
-	vertex_shader_ = glCreateShader(GL_VERTEX_SHADER);
+	*vertex = glCreateShader(GL_VERTEX_SHADER);
 	const char* vertex_shader_source = LoadShader((shader+"_shader.vert").c_str());
-	glShaderSource(vertex_shader_, 1, &vertex_shader_source, nullptr);
-	glCompileShader(vertex_shader_);
+	glShaderSource(*vertex, 1, &vertex_shader_source, nullptr);
+	glCompileShader(*vertex);
 	SAFE_DELETE_ARRAY(vertex_shader_source);
-	CheckShader(vertex_shader_);
+	CheckShader(*vertex);
 
-	fragment_shader_ = glCreateShader(GL_FRAGMENT_SHADER);
+	*fragment = glCreateShader(GL_FRAGMENT_SHADER);
 	const char* fragment_shader_source = LoadShader((shader+"_shader.frag").c_str());
-	glShaderSource(fragment_shader_, 1, &fragment_shader_source, nullptr);
-	glCompileShader(fragment_shader_);
+	glShaderSource(*fragment, 1, &fragment_shader_source, nullptr);
+	glCompileShader(*fragment);
 	SAFE_DELETE_ARRAY(fragment_shader_source);
-	CheckShader(fragment_shader_);
+	CheckShader(*fragment);
 
-	shader_program_ = glCreateProgram();
-	glAttachShader(shader_program_, vertex_shader_);
-	glAttachShader(shader_program_, fragment_shader_);
-	glLinkProgram(shader_program_);
-	CheckProgram(shader_program_);
+	*program = glCreateProgram();
+	glAttachShader(*program, *vertex);
+	glAttachShader(*program, *fragment);
+	glLinkProgram(*program);
+	CheckProgram(*program);
 
-	glUseProgram(shader_program_);
+	glUseProgram(*program);
+}
+
+void Renderer::InitShadowDepthbuffer()
+{
+	glGenTextures(1, &tex_shadow_map_); // texture to hold the depth values from the light's perspective
+	glBindTexture(GL_TEXTURE_2D, tex_shadow_map_);
+	// GL_DEPTH_COMPONENT ... each element is a single depth value. The GL converts it to floating point, multiplies by the signed scale
+	// factor GL_DEPTH_SCALE, adds the signed bias GL_DEPTH_BIAS, and clamps to the range [0, 1] – this will be important later
+	
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadow_width_, shadow_height_, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	const float color[] = { 1.0f, 1.0f, 1.0f, 1.0f }; // areas outside the light's frustum will be lit
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glGenFramebuffers(1, &fbo_shadow_map_); // new frame buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo_shadow_map_);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, tex_shadow_map_, 0); // attach the texture as depth
+	glDrawBuffer(GL_NONE); // we dont need any color buffer during the first pass
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); // bind the default framebuffer back
+
+	use_shadows_ = true;
+	PrepareShaders(&shadow_shader_program_, &shadow_vertex_shader_, &shadow_fragment_shader_, "shaders/shadow");
 }

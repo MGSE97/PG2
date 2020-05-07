@@ -207,9 +207,9 @@ void CreateBindlessTexture(GLuint64& handle, Texture* texture)
 GLMaterial Material::CreateStruct() {
 	GLMaterial mat;
 	mat.diffuse = diffuse_;
-	printf("%f %f %f\n", diffuse_.r, diffuse_.g, diffuse_.b);
+	//printf("%f %f %f\n", diffuse_.r, diffuse_.g, diffuse_.b);
 	mat.normal = {0, 0, 1};
-	mat.rma = {roughness_, metallicness, 1.f};
+	mat.rma = {roughness_, metallicness, ior};
 
 	CreateBindlessTexture(mat.tex_diffuse, textures_[kDiffuseMapSlot]);
 	CreateBindlessTexture(mat.tex_normal, textures_[kNormalMapSlot]);
