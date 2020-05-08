@@ -42,7 +42,7 @@ void Light::Use(GLuint program, const char* name)
 	}
 }
 
-void Light::SetShadows(Vector3 target, int width, int height, float near_, float far_, float fov_x)
+void Light::SetShadows(Vector3 target, int width, int height, float near_, float far_, float fov_x, Vector3 up)
 {
 	width_ = width;
 	height_ = height;
@@ -50,6 +50,7 @@ void Light::SetShadows(Vector3 target, int width, int height, float near_, float
 	f_y_ = far_;
 	n_y_ = near_;
 	fov_x_ = fov_x;
+	up_ = up;
 }
 
 void Light::Update()
@@ -76,4 +77,5 @@ void Light::Update()
 	MV.EuclideanInverse();
 
 	MLP = MP * MV;
+	changed_ = true;
 }

@@ -20,13 +20,13 @@ void framebuffer_resize_callback(GLFWwindow* window, int width, int height)
 	renderer->camera.Update();
 }
 
-//#define SCENE PIECE
-#define SCENE AVANGER
+#define SCENE PIECE
+//#define SCENE AVANGER
 int tutorial_2(const int width, const int height)
 {
 #if SCENE == AVANGER
 	// Avanger
-	renderer = new Renderer(width, height, deg2rad(45.0), Vector3(200, -150, 150), Vector3(0, 0, 35), Vector3(10, 0, 400));
+	renderer = new Renderer(width, height, deg2rad(45.0), Vector3(200, -150, 150), Vector3(0, 0, 35), Vector3(0, 0, 400));
 	renderer->LoadScene("../../data/6887/6887_allied_avenger_gi2.obj");
 #elif SCENE == CUBE
 	// Cube
@@ -34,14 +34,16 @@ int tutorial_2(const int width, const int height)
 	renderer->LoadScene("../../data/cube/cube.obj");
 #elif SCENE == PIECE
 	// Piece
-	renderer = new Renderer(width, height, deg2rad(45.0), Vector3(25, -25, 40), Vector3(0, 0, 4), Vector3(200, 200, 200));
+	renderer = new Renderer(width, height, deg2rad(45.0), Vector3(25, -25, 40), Vector3(0, 0, 4), Vector3(0, 100, 50));
 	renderer->LoadScene("../../data/piece/piece_02.obj");
 #endif
 
 	renderer->InitShadowDepthbuffer();
-	renderer->PrepareShadows();
+	renderer->InitSSAODepthbuffer();
 
 	glfwSetFramebufferSizeCallback(renderer->window, framebuffer_resize_callback);
+	
+	renderer->FinishSetup();
 
 	int i = 0;
 	while (!glfwWindowShouldClose(renderer->window))
@@ -50,7 +52,7 @@ int tutorial_2(const int width, const int height)
 		if (glfwGetMouseButton(renderer->window, 2) == GLFW_PRESS)
 		{
 			i++;
-			if (i >= 6) i = 0;
+			if (i >= 6+3) i = 0;
 			Sleep(1000);
 		}
 		if (glfwGetMouseButton(renderer->window, 0) == GLFW_PRESS)
@@ -67,6 +69,13 @@ int tutorial_2(const int width, const int height)
 				renderer->camera.view_from_.y++;
 			if (i == 5)
 				renderer->camera.view_from_.z++;
+
+			if (i == 6)
+				renderer->light.position_.x++;
+			if (i == 7)
+				renderer->light.position_.y++;
+			if (i == 8)
+				renderer->light.position_.z++;
 		}
 		if (glfwGetMouseButton(renderer->window, 1) == GLFW_PRESS)
 		{
@@ -83,9 +92,18 @@ int tutorial_2(const int width, const int height)
 				renderer->camera.view_from_.y--;
 			if (i == 5)
 				renderer->camera.view_from_.z--;
+
+			if (i == 6)
+				renderer->light.position_.x--;
+			if (i == 7)
+				renderer->light.position_.y--;
+			if (i == 8)
+				renderer->light.position_.z--;
 		}
-		printf("\r%d > %f %f %f, %f %f %f", i, renderer->camera.view_at_.x, renderer->camera.view_at_.y, renderer->camera.view_at_.z, renderer->camera.view_from_.x, renderer->camera.view_from_.y, renderer->camera.view_from_.z);
+		printf("\r%d > %f %f %f, %f %f %f, %f %f %f", i, renderer->camera.view_at_.x, renderer->camera.view_at_.y, renderer->camera.view_at_.z, renderer->camera.view_from_.x, renderer->camera.view_from_.y, renderer->camera.view_from_.z, renderer->light.position_.x, renderer->light.position_.y, renderer->light.position_.z);
 		renderer->camera.Update();
+		renderer->light.Update();
+		renderer->Update();
 
 		// Drawing loop
 		glClearColor( 0.2f, 0.3f, 0.3f, 1.0f ); // state setting function

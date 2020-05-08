@@ -99,9 +99,10 @@ void main( void )
 	vec3 rma = vec3(material.rma.r, material.rma.g, 1);
 	if(material.tex_rma > 0)
 		rma = texture(sampler2D(material.tex_rma), tex).rgb;
-
-	float roughness = material.rma.r;
-	float metallicness = material.rma.g;
+        
+	float roughness = rma.r;
+	float metallicness = rma.g;
+    float ao = rma.b;
 
 	// Prepare vectors
 	//vec3 L = normalize(light - pos);
@@ -138,7 +139,7 @@ void main( void )
     // Outgoing radiance Lo        
     vec3 Lo = (kD * diffuse / PI + specular) * radiance * NdL; 
 
-    vec3 ambient = vec3(0.03) * diffuse;
+    vec3 ambient = vec3(0.03) * diffuse * ao;
     vec3 color = ambient + Lo;
 	
     // Gamma correction

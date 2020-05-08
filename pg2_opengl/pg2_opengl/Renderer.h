@@ -13,7 +13,8 @@ public:
 
 	void Prepare();
 	void LoadScene(const char* file_name);
-	void PrepareShadows();
+	void Update();
+	void FinishSetup();
 
 	void Draw();
 
@@ -23,6 +24,7 @@ public:
 	GLFWwindow* window;
 
 	void InitShadowDepthbuffer(); // initialize shadow (depth) map texture and framebuffer for the first pass
+	void InitSSAODepthbuffer(); // initialize camera depth map texture and framebuffer
 private:
 	int InitGL();
 	
@@ -35,17 +37,28 @@ private:
 	GLuint shadow_vertex_shader_;
 	GLuint shadow_fragment_shader_;
 
-	GLint CheckShader(const GLenum shader);
+	GLint CheckShader(const GLenum shader, const char* name);
 	GLint CheckProgram(const GLenum program);
-	char* LoadShader(const char* file_name);
+	std::string* LoadShader(const char* file_name);
 
 	Matrix4x4 mlp;
-	int shadow_width_{ 1024 }; // shadow map resolution
+	int shadow_width_{ 4096 }; // shadow map resolution
 	int shadow_height_{ shadow_width_ };
 	bool use_shadows_{ false };	// initialized shadow buffer
 	GLuint fbo_shadow_map_{ 0 }; // shadow mapping FBO
 	GLuint tex_shadow_map_{ 0 }; // shadow map texture
 
+	bool use_ssao_{ false };	// initialized shadow buffer
+	GLuint fbo_ssao_map_{ 0 }; // ao mapping FBO
+	GLuint tex_ssao_map_{ 0 }; // ao map texture
+	GLuint tex_ssao_noise_{ 0 }; // ao noise texture
+
+	void PrepareSSAO();
+
+	void UpdateSSAO();
+	void UpdateShadows();
+
 	void DrawShadows();
+	void DrawSSAO();
 };
 

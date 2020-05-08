@@ -67,7 +67,8 @@ void Camera::Update()
 		0, 0, -1, 0
 	);
 
-	Vector3 z_c = view_from_ - view_at_;
+
+	Vector3 z_c = view_from_ - view_at_;;
 	z_c.Normalize();
 	Vector3 x_c = up_.CrossProduct(z_c);
 	x_c.Normalize();
@@ -83,7 +84,9 @@ void Camera::Update()
 		0.f, 0.f, 1.f, 0.f,
 		0.f, 0.f, 0.f, 1.f);
 	
-	SetMatrix4x4(shader_program_, (MP*MV*mm).data(), "pv");
+	MVP = MP * MV * mm;
+
+	SetMatrix4x4(shader_program_, MVP.data(), "pv");
 	SetVector3(shader_program_, view_from_.data, "eye");
 }
 

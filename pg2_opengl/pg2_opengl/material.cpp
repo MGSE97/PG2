@@ -7,6 +7,7 @@ const char Material::kNormalMapSlot = 2;
 const char Material::kOpacityMapSlot = 3;
 const char Material::kRoughnessMapSlot = 4;
 const char Material::kMetallicnessMapSlot = 5;
+const char Material::kRMAMapSlot = 6;
 
 Material::Material()
 {
@@ -213,7 +214,7 @@ GLMaterial Material::CreateStruct() {
 
 	CreateBindlessTexture(mat.tex_diffuse, textures_[kDiffuseMapSlot]);
 	CreateBindlessTexture(mat.tex_normal, textures_[kNormalMapSlot]);
-	CreateBindlessTexture(mat.tex_rma, textures_[kRoughnessMapSlot]);
+	CreateBindlessTexture(mat.tex_rma, textures_[kRMAMapSlot]);
 	
 	return mat;
 }

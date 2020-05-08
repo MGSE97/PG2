@@ -17,13 +17,13 @@ void main( void )
 	gl_Position = pv * vec4(position, 1.0f); // model-space -> clip-space
 	
 	vec3 N = normal;
-	vec3 T = tangent;
+	vec3 T = normalize(tangent);
 	vec3 B = cross(T, N);
 	if(dot(cross(T, N), B) < 0)
 		T = -T;
 	TBN = mat3(T, B, N);
 	
-	tex =  vec2(texcoord.x, 1.0f - texcoord.y);
+	tex =  vec2(texcoord.x, 1.0 - texcoord.y);
 	norm = N;
 	matIdx = materialIdx;
 }

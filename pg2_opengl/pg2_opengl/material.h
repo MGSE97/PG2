@@ -7,7 +7,7 @@
 /*! \def NO_TEXTURES
 \brief Maximální poèet textur pøiøazených materiálu.
 */
-#define NO_TEXTURES 6
+#define NO_TEXTURES 7
 
 /*! \def IOR_AIR
 \brief Index lomu vzduchu za normálního tlaku.
@@ -150,6 +150,7 @@ public:
 	static const char kOpacityMapSlot; /*!< Èíslo slotu transparentní textury. */
 	static const char kRoughnessMapSlot; /*!< Èíslo slotu textury drsnosti. */
 	static const char kMetallicnessMapSlot; /*!< Èíslo slotu textury kovovosti. */
+	static const char kRMAMapSlot; /*!< Èíslo slotu textury kovovosti. */
 	int matIdx;
 
 private:

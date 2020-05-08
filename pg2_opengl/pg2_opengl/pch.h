@@ -4,7 +4,7 @@
 #define NOMINMAX
 #define _CRT_SECURE_NO_WARNINGS
 
-#define VERBOSE true
+#define VERBOSE false
 
 // std libs
 #include <stdio.h>
@@ -17,6 +17,7 @@
 #include <math.h>
 #include <assert.h>
 #include <functional>
+#include <fstream>
 
 #ifdef _WIN32
 #include <Windows.h>

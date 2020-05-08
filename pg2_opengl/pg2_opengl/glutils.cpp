@@ -44,4 +44,3 @@ void SetSampler(const GLuint program, GLenum texture_unit, const char* sampler_n
 		glUniform1i(location, texture_unit);
 	}
 }
-

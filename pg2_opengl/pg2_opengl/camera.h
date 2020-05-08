@@ -40,6 +40,7 @@ public:
 	Matrix4x4 MP; // projection matrix from CS -> WS	
 	Matrix4x4 MM; // M matrix from CS -> WS	
 	Matrix4x4 MN; // N matrix from CS -> WS	
+	Matrix4x4 MVP; // Result matrix from CS -> WS	
 
 	int width{ 640 }; // image width (px)
 	int height{ 480 };  // image height (px)
@@ -47,12 +48,13 @@ public:
 
 	float f_y_{ 1.0f }; // focal far lenght (px)
 	float n_y_{ 0.0f }; // focal near lenght (px)
+
+	Vector3 up_{ Vector3(0.0f, 0.0f, 1.0f) }; // up vector
 private:
 	float fov_y_{ 0.785f }; // vertical field of view (rad)
 	
 	/*Vector3 view_from_; // ray origin or eye or O
 	Vector3 view_at_; // target T*/
-	Vector3 up_{ Vector3( 0.0f, 0.0f, 1.0f ) }; // up vector
 };
 
 #endif

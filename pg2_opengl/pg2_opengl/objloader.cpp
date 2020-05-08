@@ -189,6 +189,12 @@ int LoadMTL( const char * file_name, const char * path, std::vector<Material *> 
 					std::string full_name = std::string( path ).append( image_file_name );
 					material->set_texture( Material::kMetallicnessMapSlot, TextureProxy( full_name, already_loaded_textures, -1, true ) );
 				}
+				else if (strstr(tmp, "map_RMA") == tmp) // roughness, metalilic, ambient occlusion map
+				{
+					sscanf(tmp, "%*s %s", image_file_name);
+					std::string full_name = std::string(path).append(image_file_name);
+					material->set_texture(Material::kRMAMapSlot, TextureProxy(full_name, already_loaded_textures, -1, true));
+				}
 				else if ( strstr( tmp, "shader" ) == tmp ) // used shader
 				{
 					int shader = 0;
