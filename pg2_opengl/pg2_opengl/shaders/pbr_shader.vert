@@ -34,7 +34,7 @@ void main( void )
 	TBN = mat3(T, B, N);
 
 	pos = gl_Position.rgb;
-	tex =  vec2(texcoord.x, 1.0f - texcoord.y);
+	tex =  vec2(texcoord.x, 1.0 - texcoord.y);
 	norm = N;
 	matIdx = materialIdx;
 

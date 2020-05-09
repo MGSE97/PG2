@@ -3,15 +3,8 @@
 #include "glutils.h"
 
 
-Renderer::Renderer(const int width, const int height, const float fov_x, const Vector3 view_from, const Vector3 view_at, const Vector3 light_pos)
+Renderer::Renderer(const int width, const int height, const float fov_x, const Vector3 view_from, const Vector3 view_at, const Vector3 light_pos, std::string shader)
 {
-	//std::string shader = "shaders/basic";
-	//std::string shader = "shaders/pbr";
-	std::string shader = "shaders/pbr_shadow";
-	//std::string shader = "shaders/shadow_view";
-	//std::string shader = "shaders/lambert";
-	//std::string shader = "shaders/normal";
-
 	Prepare();
 	PrepareShaders(&shader_program_, &vertex_shader_, &fragment_shader_, shader);
 	camera = Camera(width, height, fov_x, 0.8f, 10000.f, view_from, view_at, shader_program_);
@@ -95,6 +88,63 @@ void Renderer::FinishSetup()
 	PrepareSSAO();
 }
 
+void Renderer::LoadTexture(const char* file, TextureType type, int lod)
+{
+	Texture4f texture(file);
+	// ToDo use lod
+	switch (type)
+	{
+	case BRDF_Integration_Map:
+		glGenTextures(1, &tex_brdf_map_);
+		glBindTexture(GL_TEXTURE_2D, tex_brdf_map_);
+
+		//if (texture.bpp() == 3)
+			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, texture.width(), texture.height(), 0, GL_BGR, GL_UNSIGNED_BYTE, texture.data());
+		//else if (texture.bpp() == 4)
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, texture.width(), texture.height(), 0, GL_BGRA, GL_FLOAT, texture.data());
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, tex_brdf_map_);
+		SetSampler(shader_program_, 3, "brdf_map");
+		break;
+	case PreFiltered_Enviroment_Map:
+		glGenTextures(1, &tex_env_map_);
+		glBindTexture(GL_TEXTURE_2D, tex_env_map_);
+
+		//if (texture.bpp() == 3)
+			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, texture.width(), texture.height(), 0, GL_BGR, GL_UNSIGNED_BYTE, texture.data());
+		//else if (texture.bpp() == 4)
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, texture.width(), texture.height(), 0, GL_BGRA, GL_FLOAT, texture.data());
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, tex_env_map_);
+		SetSampler(shader_program_, 4, "env_map");
+		break;
+	case Irradiance_Map:
+		// ToDo CubeMap rng + Mimpmap generate
+		break;
+	}
+}
+
+void Renderer::LoadTextures(std::vector<const char*> files, TextureType type)
+{
+	for (auto file : files)
+	{
+		// ToDo get lod
+		LoadTexture(file, type);
+	}
+}
+
 float lerp(float a, float b, float f)
 {
 	return a + f * (b - a);
@@ -146,6 +196,8 @@ void Renderer::PrepareSSAO()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
+
+	SetBoolean(shader_program_, use_ssao_, "ssao_enabled");
 }
 
 void Renderer::UpdateSSAO()
@@ -291,44 +343,6 @@ std::string* Renderer::LoadShader(const char* file_name)
 		printf("Shader error: File '%s' is empty.\n", file_name);
 		return NULL;
 	}
-	//FILE* file = fopen(file_name, "rt");
-
-	//if (file == NULL)
-	//{
-	//	printf("IO error: File '%s' not found.\n", file_name);
-
-	//	return NULL;
-	//}
-
-	//size_t file_size = static_cast<size_t>(GetFileSize64(file_name));
-	//char* shader = NULL;
-
-	//if (file_size < 1)
-	//{
-	//	printf("Shader error: File '%s' is empty.\n", file_name);
-	//}
-	//else
-	//{
-	//	/* v glShaderSource nezadáváme v posledním parametru délku,
-	//	takže øetìzec musí být null terminated, proto +1 a reset na 0*/
-	//	shader = new char[file_size + 1];
-	//	memset(shader, 0, sizeof(*shader) * (file_size + 1));
-
-	//	size_t bytes = 0; // poèet již naètených bytù
-
-	//	do
-	//	{
-	//		bytes += fread(shader, sizeof(char), file_size, file);
-	//	} while (!feof(file) && (bytes < file_size));
-
-	//	if (!feof(file) && (bytes != file_size))
-	//	{
-	//		printf("IO error: Unexpected end of file '%s' encountered.\n", file_name);
-	//	}
-	//}
-
-	//fclose(file);
-	//file = NULL;
 	
 	return shader;
 }

@@ -10,7 +10,7 @@
 #define AOSamples 64
 #define AOBias 0.1
 #define AORadius 1
-#define AOPCF 2
+#define AOPCF 5
 
 uniform vec3 light;
 uniform vec3 eye;
@@ -24,9 +24,14 @@ flat in int matIdx;
 in vec3 position_lcs;
 uniform sampler2D shadow_map; // light's shadow map
 
+uniform bool ssao_enabled; // ssao active
 uniform sampler2D ssao_map; // ssao map
 uniform sampler2D ssao_noise; // ssao noise
 uniform vec3 ssao_samples[AOSamples];   // ssao samples
+
+uniform samplerCube iradiance_map;
+uniform sampler2D brdf_map;
+uniform sampler2D pref_env_map;
 
 out vec4 FragColor;
 
@@ -86,6 +91,12 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }  
+
+vec2 BRDFIntMap(float cosOmega, float alfa)
+{
+    return texture(brdf_map, vec2(cosOmega, alfa)).rg;
+}
+
 
 float LinearizeDepth(float depth)
 {
@@ -191,7 +202,7 @@ void main( void )
     float shadow = ComputeShadows();
 
     // Compute ambient oclusion
-    if(material.tex_rma <= 0)
+    if(material.tex_rma <= 0 && ssao_enabled)
         ao = ComputeOclusion(pos, N);
 
 	// Prepare vectors
@@ -200,10 +211,13 @@ void main( void )
     vec3 L = normalize(light);
     vec3 V = normalize(eye);
     vec3 H = normalize(L + V);
+    vec3 O = reflect(L, N);
 
 	// Prepare dotproducts
 	float NdH = max(dot(N, H), 0.001);
+	float NdV = max(dot(N, V), 0.001);
     float NdL = max(dot(N, L), 0.0);
+    float NdO = max(dot(N, O), 0.0);
 
 	// Compute fresnel
 	//vec3 F0 = mix(vec3(0.04), diffuse, metallicness);
@@ -224,15 +238,30 @@ void main( void )
     vec3 kD = vec3(1.0) - kS;
     kD *= 1.0 - metallicness;	  
         
-    vec3 numerator    = NDF * G * F;
+//    vec3 numerator    = NDF * G * F;
+//    //float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+//    float denominator = 4.0 * NdH;
+//    vec3 specular     = numerator / max(denominator, 0.001);  
+//            
+//    // Outgoing radiance Lo        
+//    vec3 Lo = (kD * diffuse / PI + specular) * radiance * NdL * shadow; 
+//
+//    vec3 ambient = vec3(0.03) * diffuse * ao;
+//    vec3 color = ambient + Lo;
+
+      float numerator    = NDF * G;
     //float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
     float denominator = 4.0 * NdH;
-    vec3 specular     = numerator / max(denominator, 0.001);  
+    float specular     = numerator / max(denominator, 0.001);  
             
-    // Outgoing radiance Lo        
-    vec3 Lo = (kD * diffuse / PI + specular) * radiance * NdL * shadow; 
+    vec3 LD = diffuse / PI;// * texture(iradiance_map, N).rgb;
+    float LS = specular;
+    vec2 sb = BRDFIntMap(NdO, roughness);
 
-    vec3 ambient = vec3(0.03) * diffuse * ao;
+    // Outgoing radiance Lo        
+    vec3 Lo = (kD * LD + (kS*sb.x + sb.y)*LS) * radiance * NdL * shadow; 
+
+    vec3 ambient = kD * diffuse * ao;
     vec3 color = ambient + Lo;
 	
     // Gamma correction

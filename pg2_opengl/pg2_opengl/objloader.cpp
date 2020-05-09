@@ -26,18 +26,18 @@ int MaterialIndex( std::vector<Material *> & materials, const char * material_na
 	return -1;
 }
 
-Texture * TextureProxy(const std::string & full_name, std::map<std::string, Texture*> & already_loaded_textures,
+Texture3u* TextureProxy(const std::string & full_name, std::map<std::string, Texture3u*> & already_loaded_textures,
 	const int flip = -1, const bool single_channel = false )
 {
-	std::map<std::string, Texture*>::iterator already_loaded_texture = already_loaded_textures.find(full_name);
-	Texture * texture = NULL;
+	std::map<std::string, Texture3u*>::iterator already_loaded_texture = already_loaded_textures.find(full_name);
+	Texture3u* texture = NULL;
 	if (already_loaded_texture != already_loaded_textures.end())
 	{
 		texture = already_loaded_texture->second;
 	}
 	else
 	{
-		texture = new Texture( full_name.c_str() );// , flip, single_channel);
+		texture = new Texture3u( full_name.c_str() );// , flip, single_channel);
 		already_loaded_textures[full_name] = texture;
 	}
 
@@ -99,7 +99,7 @@ int LoadMTL( const char * file_name, const char * path, std::vector<Material *> 
 	const char delim[] = "\n";
 	char * line = strtok( buffer, delim );
 
-	std::map<std::string, Texture*> already_loaded_textures;
+	std::map<std::string, Texture3u*> already_loaded_textures;
 
 	Material * material = NULL;
 
@@ -131,22 +131,22 @@ int LoadMTL( const char * file_name, const char * path, std::vector<Material *> 
 				char * tmp = Trim( line );				
 				if ( strstr( tmp, "Ka" ) == tmp ) // ambient color of the material
 				{
-					sscanf( tmp, "%*s %f %f %f", &material->ambient_.r, &material->ambient_.g, &material->ambient_.b );
-					material->ambient_ = material->ambient_.linear();
+					sscanf( tmp, "%*s %f %f %f", &material->ambient_.data[0], &material->ambient_.data[1], &material->ambient_.data[2]);
+					material->ambient_ = material->ambient_.toLinear();
 				}
 				else if ( strstr( tmp, "Kd" ) == tmp ) // diffuse color of the material
 				{
-					sscanf( tmp, "%*s %f %f %f", &material->diffuse_.r, &material->diffuse_.g, &material->diffuse_.b );
-					material->diffuse_ = material->diffuse_.linear();
+					sscanf( tmp, "%*s %f %f %f", &material->diffuse_.data[0], &material->diffuse_.data[1], &material->diffuse_.data[2]);
+					material->diffuse_ = material->diffuse_.toLinear();
 				}
 				else if ( strstr( tmp, "Ks" ) == tmp ) // specular color of the material
 				{
-					sscanf( tmp, "%*s %f %f %f", &material->specular_.r, &material->specular_.g, &material->specular_.b );
-					material->specular_ = material->specular_.linear();
+					sscanf( tmp, "%*s %f %f %f", &material->specular_.data[0], &material->specular_.data[1], &material->specular_.data[2]);
+					material->specular_ = material->specular_.toLinear();
 				}
 				else if ( strstr( tmp, "Ke" ) == tmp ) // emission color of the material
 				{
-					sscanf( tmp, "%*s %f %f %f", &material->emission_.r, &material->emission_.g, &material->emission_.b );
+					sscanf( tmp, "%*s %f %f %f", &material->emission_.data[0], &material->emission_.data[1], &material->emission_.data[2]);
 					//material->emission_ = material->emission_.linear();
 				}
 				else if ( strstr( tmp, "Ns" ) == tmp ) // specular coefficient

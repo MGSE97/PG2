@@ -20,26 +20,33 @@ void framebuffer_resize_callback(GLFWwindow* window, int width, int height)
 	renderer->camera.Update();
 }
 
+
 #define SCENE PIECE
-//#define SCENE AVANGER
+#define SCENE AVANGER
+//#define SCENE CUBE
 int tutorial_2(const int width, const int height)
 {
 #if SCENE == AVANGER
 	// Avanger
-	renderer = new Renderer(width, height, deg2rad(45.0), Vector3(200, -150, 150), Vector3(0, 0, 35), Vector3(0, 0, 400));
+	renderer = new Renderer(width, height, deg2rad(45.0), Vector3(200, -150, 150), Vector3(0, 0, 35), Vector3(0, 0, 400), "shaders/pbr_shadow");
 	renderer->LoadScene("../../data/6887/6887_allied_avenger_gi2.obj");
+	renderer->InitShadowDepthbuffer();
+	//renderer->InitSSAODepthbuffer();
 #elif SCENE == CUBE
 	// Cube
-	renderer = new Renderer(width, height, deg2rad(45.0), Vector3(5, 5, 5), Vector3(0, 0, 0), Vector3(200, 200, 200));
+	renderer = new Renderer(width, height, deg2rad(45.0), Vector3(5, 5, 5), Vector3(0, 0, 0), Vector3(200, 200, 200), "shaders/pbr");
 	renderer->LoadScene("../../data/cube/cube.obj");
 #elif SCENE == PIECE
 	// Piece
-	renderer = new Renderer(width, height, deg2rad(45.0), Vector3(25, -25, 40), Vector3(0, 0, 4), Vector3(0, 100, 50));
+	//renderer = new Renderer(width, height, deg2rad(45.0), Vector3(25, -25, 40), Vector3(0, 0, 4), Vector3(0, 100, 50), "shaders/pbr");
+	renderer = new Renderer(width, height, deg2rad(45.0), Vector3(10, -25, 15), Vector3(2, 2, 2), Vector3(52, 103, 53), "shaders/pbr");
 	renderer->LoadScene("../../data/piece/piece_02.obj");
+	//renderer->InitShadowDepthbuffer();
+	//renderer->InitSSAODepthbuffer();
 #endif
 
-	renderer->InitShadowDepthbuffer();
-	renderer->InitSSAODepthbuffer();
+	renderer->LoadTexture("../../data/maps/lebombo_irradiance_map.exr", TextureType::Irradiance_Map);
+	renderer->LoadTexture("../../data/maps/brdf_integration_map_ct_ggx.exr", TextureType::BRDF_Integration_Map);
 
 	glfwSetFramebufferSizeCallback(renderer->window, framebuffer_resize_callback);
 	

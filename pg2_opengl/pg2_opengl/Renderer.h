@@ -5,16 +5,21 @@
 #include "Model.h"
 #include "light.h"
 
+enum TextureType {BRDF_Integration_Map, PreFiltered_Enviroment_Map, Irradiance_Map};
+
 class Renderer
 {
 public:
-	Renderer(const int width, const int height, const float fov_y, const Vector3 view_from, const Vector3 view_at, const Vector3 light_pos);
+	Renderer(const int width, const int height, const float fov_y, const Vector3 view_from, const Vector3 view_at, const Vector3 light_pos, std::string shader);
 	~Renderer();
 
 	void Prepare();
 	void LoadScene(const char* file_name);
 	void Update();
 	void FinishSetup();
+
+	void LoadTexture(const char* file, TextureType type, int lod = 0);
+	void LoadTextures(std::vector<const char*> files, TextureType type);
 
 	void Draw();
 
@@ -52,6 +57,10 @@ private:
 	GLuint fbo_ssao_map_{ 0 }; // ao mapping FBO
 	GLuint tex_ssao_map_{ 0 }; // ao map texture
 	GLuint tex_ssao_noise_{ 0 }; // ao noise texture
+
+	GLuint tex_brdf_map_{ 0 };
+	GLuint tex_env_map_{ 0 };
+	GLuint tex_ir_map_{ 0 };
 
 	void PrepareSSAO();
 

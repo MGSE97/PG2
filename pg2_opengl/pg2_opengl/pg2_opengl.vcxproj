@@ -160,6 +160,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
+    <ClInclude Include="color.h" />
     <ClInclude Include="glutils.h" />
     <ClInclude Include="light.h" />
     <ClInclude Include="material.h" />
@@ -184,6 +185,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\libs\glad\src\glad.cpp" />
     <ClCompile Include="camera.cpp" />
+    <ClCompile Include="color.cpp" />
     <ClCompile Include="glutils.cpp" />
     <ClCompile Include="light.cpp" />
     <ClCompile Include="material.cpp" />

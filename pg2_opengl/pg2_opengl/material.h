@@ -3,6 +3,7 @@
 
 #include "vector3.h"
 #include "texture.h"
+#include "structs.h"
 
 /*! \def NO_TEXTURES
 \brief Maximální poèet textur pøiøazených materiálu.
@@ -80,7 +81,7 @@ public:
 	Material( std::string & name, const Color3f & ambient, const Color3f & diffuse,
 		const Color3f & specular, const Color3f & emission, const float reflectivity,
 		const float shininess, const float ior, const Shader shader,
-		Texture ** textures = NULL, const int no_textures = 0 );
+		Texture3u** textures = NULL, const int no_textures = 0 );
 
 	//! Destruktor.
 	/*!
@@ -107,21 +108,21 @@ public:
 	\param slot èíslo slotu, do kterého bude textura pøiøazena. Maximálnì \a NO_TEXTURES - 1.
 	\param texture ukazatel na texturu.
 	*/
-	void set_texture( const int slot, Texture * texture );
+	void set_texture( const int slot, Texture3u* texture );
 
 	//! Vrátí texturu.
 	/*!	
 	\param slot èíslo slotu textury. Maximálnì \a NO_TEXTURES - 1.
 	\return Ukazatel na zvolenou texturu.
 	*/
-	Texture * texture( const int slot ) const;
+	Texture3u* texture( const int slot ) const;
 
 	Shader shader() const;
 
 	void set_shader( Shader shader );
 
 	Color3f ambient( const Coord2f * tex_coord = nullptr ) const;
-	Color3f diffuse( const Coord2f * tex_coord = nullptr ) const;	
+	Color3f diffuse( const Coord2f * tex_coord = nullptr ) const;
 	Color3f specular( const Coord2f * tex_coord = nullptr ) const;
 	Color3f bump( const Coord2f * tex_coord = nullptr ) const;
 	float roughness( const Coord2f * tex_coord = nullptr ) const;
@@ -154,7 +155,7 @@ public:
 	int matIdx;
 
 private:
-	Texture * textures_[NO_TEXTURES]; /*!< Pole ukazatelù na textury. */
+	Texture3u* textures_[NO_TEXTURES]; /*!< Pole ukazatelù na textury. */
 	/*
 	slot 0 - diffuse map + alpha
 	slot 1 - specular map + opaque alpha

@@ -44,3 +44,17 @@ void SetSampler(const GLuint program, GLenum texture_unit, const char* sampler_n
 		glUniform1i(location, texture_unit);
 	}
 }
+
+void SetBoolean(const GLuint program, GLboolean value, const char* sampler_name)
+{
+	const GLint location = glGetUniformLocation(program, sampler_name);
+	if (location == -1)
+	{
+		if (VERBOSE)
+			printf("Boolean '%s' not found in active shader.\n", sampler_name);
+	}
+	else
+	{
+		glUniform1i(location, (GLint)value);
+	}
+}

@@ -1,13 +1,13 @@
-#include "pch.h"
+//#include "stdafx.h"
 #include "texture.h"
-#include "mymath.h"
+#include "pch.h"
 
-Texture::Texture( const char * file_name )
+FIBITMAP * BitmapFromFile( const char * file_name, int & width, int & height )
 {
 	// image format
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 	// pointer to the image, once loaded
-	FIBITMAP * dib =  nullptr;
+	FIBITMAP * dib = nullptr;
 	// pointer to the image data
 	//BYTE * bits = nullptr;
 
@@ -28,148 +28,457 @@ Texture::Texture( const char * file_name )
 		}
 		// if the image loaded
 		if ( dib )
-		{			
+		{
 			// get the image width and height
-			width_ = int( FreeImage_GetWidth( dib ) );
-			height_ = int( FreeImage_GetHeight( dib ) );
+			width = int( FreeImage_GetWidth( dib ) );
+			height = int( FreeImage_GetHeight( dib ) );
 
 			// if each of these is ok
-			if ( ( width_ != 0 ) && ( height_ != 0 ) )
-			{				
-				// texture loaded
-				scan_width_ = FreeImage_GetPitch( dib ); // in bytes
-				pixel_size_ = FreeImage_GetBPP( dib ) / 8; // in bytes				
-
-				data_ = new BYTE[scan_width_ * height_]; // BGR(A) format									
-				
-				FreeImage_ConvertToRawBits( data_, dib, scan_width_, pixel_size_ * 8,
-					FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, TRUE );
-			}
-
-			FreeImage_Unload( dib );			
-		}
-	}
-
-	if ( data_ )
-	{
-		printf( "Texture '%s' (%d x %d px, %d bpp, %0.1f MB) loaded.\n",
-			file_name, width_, height_, pixel_size_ * 8, scan_width_ * height_ / ( 1024.0f * 1024.0f ) );
-	}
-	else
-	{
-		printf( "Texture '%s' not loaded.\n", file_name );		
-	}
-}
-
-Texture::~Texture()
-{	
-	if ( data_ )
-	{
-		// free FreeImage's copy of the data
-		delete[] data_;
-		data_ = nullptr;
-		
-		width_ = 0;
-		height_ = 0;
-		scan_width_ = 0;
-		pixel_size_ = 0;
-	}
-}
-
-Color3f Texture::texel( const float u, const float v, const bool linearize ) const
-{
-	//assert( ( u >= 0.0f && u <= 1.0f ) && ( v >= 0.0f && v <= 1.0f ) );
-	
-	// nearest neighbour
-	/*const int x = max( 0, min( width_ - 1, int( u * width_ ) ) );
-	const int y = max( 0, min( height_ - 1, int( v * height_ ) ) );
-
-	const int offset = y * scan_width_ + x * pixel_size_;
-	const float s = 1.0f / 255.0f;
-	const float b = data_[offset] * s;
-	const float g = data_[offset + 1] * s;
-	const float r = data_[offset + 2] * s;
-	
-	return Color3f{ r, g, b }.linear();*/
-
-	// bilinear interpolation	
-	const float x = u * width_;
-	const float y = v * height_;
-
-	const int x0 = max( 0, min( width_ - 1, int( x ) ) );
-	const int y0 = max( 0, min( height_ - 1, int( y ) ) );
-	
-	const int x1 = min( width_ - 1, x0 + 1 );
-	const int y1 = min( height_ - 1, y0 + 1 );
-	
-	BYTE * p1 = &data_[y0 * scan_width_ + x0 * pixel_size_];
-	BYTE * p2 = &data_[y0 * scan_width_ + x1 * pixel_size_];
-	BYTE * p3 = &data_[y1 * scan_width_ + x0 * pixel_size_];
-	BYTE * p4 = &data_[y1 * scan_width_ + x1 * pixel_size_];
-
-	const float kx = x - x0;
-	const float ky = y - y0;
-
-	if ( pixel_size_ < 12 )
-	{
-		Color3f texel = ( Color3f::make_from_bgr<BYTE>( p1 ) * ( 1 - kx ) * ( 1 - ky ) +
-			Color3f::make_from_bgr<BYTE>( p2 ) * kx * ( 1 - ky ) +
-			Color3f::make_from_bgr<BYTE>( p3 ) * ( 1 - kx ) * ky +
-			Color3f::make_from_bgr<BYTE>( p4 ) * kx * ky ) *
-			( 1.0f / 255.0f );
-		if ( linearize )
-			return texel.linear();
-		else
-			return texel;
-	}
-	else
-	{
-		return ( Color3f::make_from_bgr<float>( p1 ) * ( 1 - kx ) * ( 1 - ky ) +
-			Color3f::make_from_bgr<float>( p2 ) * kx * ( 1 - ky ) +
-			Color3f::make_from_bgr<float>( p3 ) * ( 1 - kx ) * ky +
-			Color3f::make_from_bgr<float>( p4 ) * kx * ky );		
-	}
-}
-
-int Texture::width() const
-{
-	return width_;
-}
-
-int Texture::height() const
-{
-	return height_;
-}
-
-BYTE* Texture::data() const
-{
-	return data_;
-}
-
-int Texture::bpp() const
-{
-	return pixel_size_;
-}
-
-void Texture::CopyTo( BYTE * data, const int pixel_size )
-{
-	if ( pixel_size == pixel_size_ )
-	{
-		memcpy( data, data_, scan_width_ * height_ );
-	}
-	else
-	{
-		for ( int y = 0; y < height_; ++y )
-		{
-			for ( int x = 0; x < width_; ++x )
+			if ( ( width == 0 ) || ( height == 0 ) )
 			{
-				for ( int c = 0; c < min( pixel_size, pixel_size_ ); c++ )
-				{
-					data[y * pixel_size * width_ + x * pixel_size + c] = data_[y * scan_width_ + x * pixel_size_ + c];
-				}
+				FreeImage_Unload( dib );
+				dib = nullptr;
 			}
 		}
 	}
+
+	return dib;
 }
 
+FIBITMAP * Custom_FreeImage_ConvertToRGBF( FIBITMAP * dib )
+{
+	FIBITMAP * src = NULL;
+	FIBITMAP * dst = NULL;
 
+	if ( !FreeImage_HasPixels( dib ) ) return NULL;
+
+	const FREE_IMAGE_TYPE src_type = FreeImage_GetImageType( dib );
+
+	// check for allowed conversions 
+	switch ( src_type ) {
+	case FIT_BITMAP:
+	{
+		// allow conversion from 24- and 32-bit
+		const FREE_IMAGE_COLOR_TYPE color_type = FreeImage_GetColorType( dib );
+		if ( ( color_type != FIC_RGB ) && ( color_type != FIC_RGBALPHA ) ) {
+			src = FreeImage_ConvertTo24Bits( dib );
+			if ( !src ) return NULL;
+		}
+		else {
+			src = dib;
+		}
+		break;
+	}
+	case FIT_UINT16:
+		// allow conversion from 16-bit
+		src = dib;
+		break;
+	case FIT_RGB16:
+		// allow conversion from 48-bit RGB
+		src = dib;
+		break;
+	case FIT_RGBA16:
+		// allow conversion from 64-bit RGBA (ignore the alpha channel)
+		src = dib;
+		break;
+	case FIT_FLOAT:
+		// allow conversion from 32-bit float
+		src = dib;
+		break;
+	case FIT_RGBAF:
+		// allow conversion from 128-bit RGBAF
+		src = dib;
+		break;
+	case FIT_RGBF:
+		// RGBF type : clone the src
+		return FreeImage_Clone( dib );
+		break;
+	default:
+		return NULL;
+	}
+
+	// allocate dst image
+
+	const unsigned width = FreeImage_GetWidth( src );
+	const unsigned height = FreeImage_GetHeight( src );
+
+	dst = FreeImage_AllocateT( FIT_RGBF, width, height );
+	if ( !dst ) {
+		if ( src != dib ) {
+			FreeImage_Unload( src );
+		}
+		return NULL;
+	}
+
+	// copy metadata from src to dst
+	FreeImage_CloneMetadata( dst, src );
+
+	// convert from src type to RGBF
+
+	const unsigned src_pitch = FreeImage_GetPitch( src );
+	const unsigned dst_pitch = FreeImage_GetPitch( dst );
+
+	switch ( src_type ) {
+	case FIT_BITMAP:
+	{
+		// calculate the number of bytes per pixel (3 for 24-bit or 4 for 32-bit)
+		const unsigned bytespp = FreeImage_GetLine( src ) / FreeImage_GetWidth( src );
+
+		const BYTE * src_bits = ( BYTE * )FreeImage_GetBits( src );
+		BYTE * dst_bits = ( BYTE * )FreeImage_GetBits( dst );
+
+		for ( unsigned y = 0; y < height; y++ ) {
+			const BYTE * src_pixel = ( BYTE * )src_bits;
+			FIRGBF * dst_pixel = ( FIRGBF * )dst_bits;
+			for ( unsigned x = 0; x < width; x++ ) {
+				// convert and scale to the range [0..1]
+				dst_pixel->red = ( float )( src_pixel[FI_RGBA_RED] ) / 255.0F;
+				dst_pixel->green = ( float )( src_pixel[FI_RGBA_GREEN] ) / 255.0F;
+				dst_pixel->blue = ( float )( src_pixel[FI_RGBA_BLUE] ) / 255.0F;
+
+				src_pixel += bytespp;
+				dst_pixel++;
+			}
+			src_bits += src_pitch;
+			dst_bits += dst_pitch;
+		}
+	}
+	break;
+
+	case FIT_UINT16:
+	{
+		const BYTE * src_bits = ( BYTE * )FreeImage_GetBits( src );
+		BYTE * dst_bits = ( BYTE * )FreeImage_GetBits( dst );
+
+		for ( unsigned y = 0; y < height; y++ ) {
+			const WORD * src_pixel = ( WORD * )src_bits;
+			FIRGBF * dst_pixel = ( FIRGBF * )dst_bits;
+
+			for ( unsigned x = 0; x < width; x++ ) {
+				// convert and scale to the range [0..1]
+				const float dst_value = ( float )src_pixel[x] / 65535.0F;
+				dst_pixel[x].red = dst_value;
+				dst_pixel[x].green = dst_value;
+				dst_pixel[x].blue = dst_value;
+			}
+			src_bits += src_pitch;
+			dst_bits += dst_pitch;
+		}
+	}
+	break;
+
+	case FIT_RGB16:
+	{
+		const BYTE * src_bits = ( BYTE * )FreeImage_GetBits( src );
+		BYTE * dst_bits = ( BYTE * )FreeImage_GetBits( dst );
+
+		for ( unsigned y = 0; y < height; y++ ) {
+			const FIRGB16 * src_pixel = ( FIRGB16 * )src_bits;
+			FIRGBF * dst_pixel = ( FIRGBF * )dst_bits;
+
+			for ( unsigned x = 0; x < width; x++ ) {
+				// convert and scale to the range [0..1]
+				dst_pixel[x].red = ( float )( src_pixel[x].red ) / 65535.0F;
+				dst_pixel[x].green = ( float )( src_pixel[x].green ) / 65535.0F;
+				dst_pixel[x].blue = ( float )( src_pixel[x].blue ) / 65535.0F;
+			}
+			src_bits += src_pitch;
+			dst_bits += dst_pitch;
+		}
+	}
+	break;
+
+	case FIT_RGBA16:
+	{
+		const BYTE * src_bits = ( BYTE * )FreeImage_GetBits( src );
+		BYTE * dst_bits = ( BYTE * )FreeImage_GetBits( dst );
+
+		for ( unsigned y = 0; y < height; y++ ) {
+			const FIRGBA16 * src_pixel = ( FIRGBA16 * )src_bits;
+			FIRGBF * dst_pixel = ( FIRGBF * )dst_bits;
+
+			for ( unsigned x = 0; x < width; x++ ) {
+				// convert and scale to the range [0..1]
+				dst_pixel[x].red = ( float )( src_pixel[x].red ) / 65535.0F;
+				dst_pixel[x].green = ( float )( src_pixel[x].green ) / 65535.0F;
+				dst_pixel[x].blue = ( float )( src_pixel[x].blue ) / 65535.0F;
+			}
+			src_bits += src_pitch;
+			dst_bits += dst_pitch;
+		}
+	}
+	break;
+
+	case FIT_FLOAT:
+	{
+		const BYTE * src_bits = ( BYTE * )FreeImage_GetBits( src );
+		BYTE * dst_bits = ( BYTE * )FreeImage_GetBits( dst );
+
+		for ( unsigned y = 0; y < height; y++ ) {
+			const float * src_pixel = ( float * )src_bits;
+			FIRGBF * dst_pixel = ( FIRGBF * )dst_bits;
+
+			for ( unsigned x = 0; x < width; x++ ) {
+				// convert by copying greyscale channel to each R, G, B channels
+				// NOT assume float values are in [0..1] !!!
+				const float value = src_pixel[x];
+				dst_pixel[x].red = value;
+				dst_pixel[x].green = value;
+				dst_pixel[x].blue = value;
+			}
+			src_bits += src_pitch;
+			dst_bits += dst_pitch;
+		}
+	}
+	break;
+
+	case FIT_RGBAF:
+	{
+		const BYTE * src_bits = ( BYTE * )FreeImage_GetBits( src );
+		BYTE * dst_bits = ( BYTE * )FreeImage_GetBits( dst );
+
+		for ( unsigned y = 0; y < height; y++ ) {
+			const FIRGBAF * src_pixel = ( FIRGBAF * )src_bits;
+			FIRGBF * dst_pixel = ( FIRGBF * )dst_bits;
+
+			for ( unsigned x = 0; x < width; x++ ) {
+				// convert and skip alpha channel
+				dst_pixel[x].red = src_pixel[x].red;
+				dst_pixel[x].green = src_pixel[x].green;
+				dst_pixel[x].blue = src_pixel[x].blue;
+			}
+			src_bits += src_pitch;
+			dst_bits += dst_pitch;
+		}
+	}
+	break;
+	}
+
+	if ( src != dib ) {
+		FreeImage_Unload( src );
+	}
+
+	return dst;
+}
+
+FIBITMAP * Custom_FreeImage_ConvertToRGBAF( FIBITMAP * dib )
+{
+	FIBITMAP * src = NULL;
+	FIBITMAP * dst = NULL;
+
+	if ( !FreeImage_HasPixels( dib ) ) return NULL;
+
+	const FREE_IMAGE_TYPE src_type = FreeImage_GetImageType( dib );
+
+	// check for allowed conversions 
+	switch ( src_type ) {
+	case FIT_BITMAP:
+	{
+		// allow conversion from 32-bit
+		const FREE_IMAGE_COLOR_TYPE color_type = FreeImage_GetColorType( dib );
+		if ( color_type != FIC_RGBALPHA ) {
+			src = FreeImage_ConvertTo32Bits( dib );
+			if ( !src ) return NULL;
+		}
+		else {
+			src = dib;
+		}
+		break;
+	}
+	case FIT_UINT16:
+		// allow conversion from 16-bit
+		src = dib;
+		break;
+	case FIT_RGB16:
+		// allow conversion from 48-bit RGB
+		src = dib;
+		break;
+	case FIT_RGBA16:
+		// allow conversion from 64-bit RGBA
+		src = dib;
+		break;
+	case FIT_FLOAT:
+		// allow conversion from 32-bit float
+		src = dib;
+		break;
+	case FIT_RGBF:
+		// allow conversion from 96-bit RGBF
+		src = dib;
+		break;
+	case FIT_RGBAF:
+		// RGBAF type : clone the src
+		return FreeImage_Clone( dib );
+		break;
+	default:
+		return NULL;
+	}
+
+	// allocate dst image
+
+	const unsigned width = FreeImage_GetWidth( src );
+	const unsigned height = FreeImage_GetHeight( src );
+
+	dst = FreeImage_AllocateT( FIT_RGBAF, width, height );
+	if ( !dst ) {
+		if ( src != dib ) {
+			FreeImage_Unload( src );
+		}
+		return NULL;
+	}
+
+	// copy metadata from src to dst
+	FreeImage_CloneMetadata( dst, src );
+
+	// convert from src type to RGBAF
+
+	const unsigned src_pitch = FreeImage_GetPitch( src );
+	const unsigned dst_pitch = FreeImage_GetPitch( dst );
+
+	switch ( src_type ) {
+	case FIT_BITMAP:
+	{
+		// calculate the number of bytes per pixel (4 for 32-bit)
+		const unsigned bytespp = FreeImage_GetLine( src ) / FreeImage_GetWidth( src );
+
+		const BYTE * src_bits = ( BYTE * )FreeImage_GetBits( src );
+		BYTE * dst_bits = ( BYTE * )FreeImage_GetBits( dst );
+
+		for ( unsigned y = 0; y < height; y++ ) {
+			const BYTE * src_pixel = ( BYTE * )src_bits;
+			FIRGBAF * dst_pixel = ( FIRGBAF * )dst_bits;
+			for ( unsigned x = 0; x < width; x++ ) {
+				// convert and scale to the range [0..1]
+				dst_pixel->red = ( float )( src_pixel[FI_RGBA_RED] ) / 255.0F;
+				dst_pixel->green = ( float )( src_pixel[FI_RGBA_GREEN] ) / 255.0F;
+				dst_pixel->blue = ( float )( src_pixel[FI_RGBA_BLUE] ) / 255.0F;
+				dst_pixel->alpha = ( float )( src_pixel[FI_RGBA_ALPHA] ) / 255.0F;
+
+				src_pixel += bytespp;
+				dst_pixel++;
+			}
+			src_bits += src_pitch;
+			dst_bits += dst_pitch;
+		}
+	}
+	break;
+
+	case FIT_UINT16:
+	{
+		const BYTE * src_bits = ( BYTE * )FreeImage_GetBits( src );
+		BYTE * dst_bits = ( BYTE * )FreeImage_GetBits( dst );
+
+		for ( unsigned y = 0; y < height; y++ ) {
+			const WORD * src_pixel = ( WORD * )src_bits;
+			FIRGBAF * dst_pixel = ( FIRGBAF * )dst_bits;
+
+			for ( unsigned x = 0; x < width; x++ ) {
+				// convert and scale to the range [0..1]
+				const float dst_value = ( float )src_pixel[x] / 65535.0F;
+				dst_pixel[x].red = dst_value;
+				dst_pixel[x].green = dst_value;
+				dst_pixel[x].blue = dst_value;
+				dst_pixel[x].alpha = 1.0F;
+			}
+			src_bits += src_pitch;
+			dst_bits += dst_pitch;
+		}
+	}
+	break;
+
+	case FIT_RGB16:
+	{
+		const BYTE * src_bits = ( BYTE * )FreeImage_GetBits( src );
+		BYTE * dst_bits = ( BYTE * )FreeImage_GetBits( dst );
+
+		for ( unsigned y = 0; y < height; y++ ) {
+			const FIRGB16 * src_pixel = ( FIRGB16 * )src_bits;
+			FIRGBAF * dst_pixel = ( FIRGBAF * )dst_bits;
+
+			for ( unsigned x = 0; x < width; x++ ) {
+				// convert and scale to the range [0..1]
+				dst_pixel[x].red = ( float )( src_pixel[x].red ) / 65535.0F;
+				dst_pixel[x].green = ( float )( src_pixel[x].green ) / 65535.0F;
+				dst_pixel[x].blue = ( float )( src_pixel[x].blue ) / 65535.0F;
+				dst_pixel[x].alpha = 1.0F;
+			}
+			src_bits += src_pitch;
+			dst_bits += dst_pitch;
+		}
+	}
+	break;
+
+	case FIT_RGBA16:
+	{
+		const BYTE * src_bits = ( BYTE * )FreeImage_GetBits( src );
+		BYTE * dst_bits = ( BYTE * )FreeImage_GetBits( dst );
+
+		for ( unsigned y = 0; y < height; y++ ) {
+			const FIRGBA16 * src_pixel = ( FIRGBA16 * )src_bits;
+			FIRGBAF * dst_pixel = ( FIRGBAF * )dst_bits;
+
+			for ( unsigned x = 0; x < width; x++ ) {
+				// convert and scale to the range [0..1]
+				dst_pixel[x].red = ( float )( src_pixel[x].red ) / 65535.0F;
+				dst_pixel[x].green = ( float )( src_pixel[x].green ) / 65535.0F;
+				dst_pixel[x].blue = ( float )( src_pixel[x].blue ) / 65535.0F;
+				dst_pixel[x].alpha = ( float )( src_pixel[x].alpha ) / 65535.0F;
+			}
+			src_bits += src_pitch;
+			dst_bits += dst_pitch;
+		}
+	}
+	break;
+
+	case FIT_FLOAT:
+	{
+		const BYTE * src_bits = ( BYTE * )FreeImage_GetBits( src );
+		BYTE * dst_bits = ( BYTE * )FreeImage_GetBits( dst );
+
+		for ( unsigned y = 0; y < height; y++ ) {
+			const float * src_pixel = ( float * )src_bits;
+			FIRGBAF * dst_pixel = ( FIRGBAF * )dst_bits;
+
+			for ( unsigned x = 0; x < width; x++ ) {
+				// convert by copying greyscale channel to each R, G, B channels
+				// NOT assume float values are in [0..1] !!!
+				const float value = src_pixel[x];
+				dst_pixel[x].red = value;
+				dst_pixel[x].green = value;
+				dst_pixel[x].blue = value;
+				dst_pixel[x].alpha = 1.0F;
+			}
+			src_bits += src_pitch;
+			dst_bits += dst_pitch;
+		}
+	}
+	break;
+
+	case FIT_RGBF:
+	{
+		const BYTE * src_bits = ( BYTE * )FreeImage_GetBits( src );
+		BYTE * dst_bits = ( BYTE * )FreeImage_GetBits( dst );
+
+		for ( unsigned y = 0; y < height; y++ ) {
+			const FIRGBF * src_pixel = ( FIRGBF * )src_bits;
+			FIRGBAF * dst_pixel = ( FIRGBAF * )dst_bits;
+
+			for ( unsigned x = 0; x < width; x++ ) {
+				// convert pixels directly, while adding a "dummy" alpha of 1.0
+				dst_pixel[x].red = src_pixel[x].red;
+				dst_pixel[x].green = src_pixel[x].green;
+				dst_pixel[x].blue = src_pixel[x].blue;
+				dst_pixel[x].alpha = 1.0F;
+			}
+			src_bits += src_pitch;
+			dst_bits += dst_pitch;
+		}
+	}
+	break;
+	}
+
+	if ( src != dib ) {
+		FreeImage_Unload( src );
+	}
+
+	return dst;
+}

@@ -31,4 +31,7 @@
 // GLFW - simple API for creating windows, receiving input and events
 #include <GLFW/glfw3.h>
 
+// Free Image
+#include <FreeImage.h>
+
 #endif //PCH_H

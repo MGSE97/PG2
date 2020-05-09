@@ -87,39 +87,3 @@ inline float c_srgb( const float c_linear, const float gamma = 2.4f )
 		return ( 1.0f + a ) * powf( c_linear, 1.0f / gamma ) - a;
 	}
 }
-
-struct Color4f;
-
-struct Color3f
-{
-	float r, g, b;
-
-	Color3f( const float r = 0.0f, const float g = 0.0f, const float b = 0.0f ) : r( r ), g( g ), b( b ) { }
-
-	operator Color4f() const;
-
-	Color3f operator* ( const float x ) const;
-
-	Color3f linear( const float gamma = 2.4f ) const;
-	Color3f srgb( const float gamma = 2.4f ) const;
-
-	float max_value() const;
-
-	template<typename T> static Color3f make_from_bgr( BYTE* p )
-	{
-		return Color3f{ float( ( ( T* )( p ) )[2] ), float( ( ( T* )( p ) )[1] ), float( ( ( T* )( p ) )[0] ) };
-	}
-
-	bool is_zero() const;
-};
-
-Color3f operator+ ( const Color3f & x, const Color3f & y );
-Color3f operator* ( const Color3f & x, const Color3f & y );
-
-struct Color4f /*: public Color3f*/
-{
-	float r, g, b;
-	float a; // a = 1.0 means that the pixel is fully opaque		
-
-	bool is_valid() const;
-};
