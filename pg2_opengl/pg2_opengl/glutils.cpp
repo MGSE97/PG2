@@ -45,6 +45,20 @@ void SetSampler(const GLuint program, GLenum texture_unit, const char* sampler_n
 	}
 }
 
+void SetInt(const GLuint program, GLint value, const char* sampler_name)
+{
+	const GLint location = glGetUniformLocation(program, sampler_name);
+	if (location == -1)
+	{
+		if (VERBOSE)
+			printf("Integer '%s' not found in active shader.\n", sampler_name);
+	}
+	else
+	{
+		glUniform1i(location, value);
+	}
+}
+
 void SetBoolean(const GLuint program, GLboolean value, const char* sampler_name)
 {
 	const GLint location = glGetUniformLocation(program, sampler_name);

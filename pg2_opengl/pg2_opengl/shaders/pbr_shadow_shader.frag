@@ -3,10 +3,12 @@
 #extension GL_ARB_gpu_shader_int64 : require
 
 #define PI 3.14159265359
-#define LightDistanceDevider 1000.0
+
+#define LightDistanceDevider 200.0
 #define ShadowBias 0.0001
 #define ShadowAmmount 0.1
 #define ShadowPCF 5
+
 #define AOSamples 64
 #define AOBias 0.1
 #define AORadius 1
@@ -21,6 +23,7 @@ in vec2 tex;
 in vec3 norm;
 in mat3 TBN;
 flat in int matIdx;
+
 in vec3 position_lcs;
 uniform sampler2D shadow_map; // light's shadow map
 
@@ -29,9 +32,10 @@ uniform sampler2D ssao_map; // ssao map
 uniform sampler2D ssao_noise; // ssao noise
 uniform vec3 ssao_samples[AOSamples];   // ssao samples
 
-uniform samplerCube iradiance_map;
 uniform sampler2D brdf_map;
+uniform sampler2D ir_map;
 uniform sampler2D pref_env_map;
+uniform int pref_env_map_lvl;
 
 out vec4 FragColor;
 
@@ -92,11 +96,35 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
     return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }  
 
-vec2 BRDFIntMap(float cosOmega, float alfa)
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
-    return texture(brdf_map, vec2(cosOmega, alfa)).rg;
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}   
+
+const vec2 invAtan = vec2(0.1591, 0.3183);
+vec2 SampleSphericalMap(vec3 v)
+{
+    vec2 uv = vec2(atan(v.z, v.x), asin(v.y));
+    uv *= invAtan;
+    uv += 0.5;
+    uv.y = 1.0 - uv.y;
+    return uv;
 }
 
+vec2 BRDFIntMap(float NdV, float alfa)
+{
+    return texture(brdf_map, vec2(NdV, 1.0 - alfa)).rg;
+}
+
+vec3 PrefEnvMap(vec3 I, float alfa)
+{
+    return textureLod(pref_env_map, SampleSphericalMap(I), alfa * pref_env_map_lvl).rgb;
+}
+
+vec3 IrradianceMap(vec3 N)
+{
+    return texture(ir_map, SampleSphericalMap(N)).rgb;
+}
 
 float LinearizeDepth(float depth)
 {
@@ -118,7 +146,7 @@ float ComputeOclusion(vec3 position, vec3 normal)
     float occlusion = 0.0;
     vec2 radius = AORadius * ssao_texel_size;
     for(int i = 0; i < AOSamples; ++i)
-{
+    {
         // get sample position
         vec3 ssao_sample = s_TBN * ssao_samples[i]; // From tangent to view-space
         ssao_sample = gl_FragCoord.xyz + ssao_sample * vec3(radius, AORadius);
@@ -185,7 +213,6 @@ void main( void )
     // Fix oposite normal
     if(dot(N, eye) < 0)
         N = -N;
-    
 
 	// Resolve material params
 	float ior = max(material.rma.b, 1.0002926);
@@ -206,15 +233,15 @@ void main( void )
         ao = ComputeOclusion(pos, N);
 
 	// Prepare vectors
-	//vec3 L = normalize(light - pos);
-    //vec3 V = normalize(eye - pos);
-    vec3 L = normalize(light);
-    vec3 V = normalize(eye);
+	vec3 L = normalize(light - pos);
+    vec3 V = normalize(eye - pos);
     vec3 H = normalize(L + V);
     vec3 O = reflect(L, N);
+    vec3 I = reflect(-V, N);
 
 	// Prepare dotproducts
 	float NdH = max(dot(N, H), 0.001);
+    float HdV = max(dot(H, V), 0.0);
 	float NdV = max(dot(N, V), 0.001);
     float NdL = max(dot(N, L), 0.0);
     float NdO = max(dot(N, O), 0.0);
@@ -223,55 +250,46 @@ void main( void )
 	//vec3 F0 = mix(vec3(0.04), diffuse, metallicness);
     vec3 F0 = vec3((1 - ior) / (1 + ior));
     F0 = F0 * F0;
-    vec3 F  = fresnelSchlick(max(dot(H, V), 0.0), F0);   
+    vec3 F  = fresnelSchlick(HdV, F0);   
 	
+    // Reflectance equation
     // Calculate light radiance
     float distance    = length(light - pos) / LightDistanceDevider;
     float attenuation = 1.0 / (distance * distance);
     vec3 radiance     = vec3(1) * attenuation;        
         
     // Cook-Torrance brdf
-    float NDF = DistributionGGX(N, H, roughness);        
+    float D = DistributionGGX(N, H, roughness);        
     float G   = GeometrySmith(N, V, L, roughness);          
         
     vec3 kS = F;
     vec3 kD = vec3(1.0) - kS;
     kD *= 1.0 - metallicness;	  
         
-//    vec3 numerator    = NDF * G * F;
-//    //float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-//    float denominator = 4.0 * NdH;
-//    vec3 specular     = numerator / max(denominator, 0.001);  
-//            
-//    // Outgoing radiance Lo        
-//    vec3 Lo = (kD * diffuse / PI + specular) * radiance * NdL * shadow; 
-//
-//    vec3 ambient = vec3(0.03) * diffuse * ao;
-//    vec3 color = ambient + Lo;
-
-      float numerator    = NDF * G;
+    vec3 numerator    = D * G * F;
     //float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-    float denominator = 4.0 * NdH;
-    float specular     = numerator / max(denominator, 0.001);  
+    float denominator = 4.0 * NdV * NdL;
+    vec3 specular     = numerator / max(denominator, 0.001);  
             
-    vec3 LD = diffuse / PI;// * texture(iradiance_map, N).rgb;
-    float LS = specular;
-    vec2 sb = BRDFIntMap(NdO, roughness);
-
     // Outgoing radiance Lo        
-    vec3 Lo = (kD * LD + (kS*sb.x + sb.y)*LS) * radiance * NdL * shadow; 
+    vec3 Lo = (kD * diffuse / PI + specular) * radiance * NdL; 
 
-    vec3 ambient = kD * diffuse * ao;
+    // IBL Lighting
+    vec3 LD = diffuse * IrradianceMap(N);
+    vec3 LS = PrefEnvMap(I, roughness);
+    vec2 sb = BRDFIntMap(NdV, roughness);
+
+//    kS = fresnelSchlick(NdV, F0);
+//    kD = vec3(1.0) - kS;
+//    kD *= 1.0 - metallicness;	  
+        
+    vec3 ambient = (kD * LD + (kS*sb.x + sb.y)*LS) * ao; 
     vec3 color = ambient + Lo;
+    color *= shadow;
 	
     // Gamma correction
     color = color / (color + vec3(1.0));
     color = pow(color, vec3(1.0/2.2)); 
-    
-    //color = vec3(roughness, metallicness, ao);
-    //color = vec3(ao);
 
     FragColor = vec4(color, 1);
-    //FragColor = vec4(dot(N, light - pos), 0, 0, 1);
-	//FragColor = vec4(diffuse * max(dot(N, light), 0), 1);
 }

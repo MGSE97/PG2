@@ -18,7 +18,7 @@ public:
 	void Update();
 	void FinishSetup();
 
-	void LoadTexture(const char* file, TextureType type, int lod = 0);
+	void LoadTexture(const char* file, TextureType type);
 	void LoadTextures(std::vector<const char*> files, TextureType type);
 
 	void Draw();
