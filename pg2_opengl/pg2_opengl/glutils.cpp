@@ -45,6 +45,20 @@ void SetSampler(const GLuint program, GLenum texture_unit, const char* sampler_n
 	}
 }
 
+void SetHandle(const GLuint program, GLuint64 texture_handle, const char* sampler_name)
+{
+	const GLint location = glGetUniformLocation(program, sampler_name);
+	if (location == -1)
+	{
+		if (VERBOSE)
+			printf("Texture handle '%s' not found in active shader.\n", sampler_name);
+	}
+	else
+	{
+		glUniformHandleui64ARB(location, texture_handle);
+	}
+}
+
 void SetInt(const GLuint program, GLint value, const char* sampler_name)
 {
 	const GLint location = glGetUniformLocation(program, sampler_name);

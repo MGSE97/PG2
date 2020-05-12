@@ -21,7 +21,7 @@ public:
 	
 	Camera(const int width, const int height, const float fov_x,
 		const float near_y, const float far_y,
-		const Vector3 view_from, const Vector3 view_at, GLuint shader_program);
+		const Vector3 view_from, const Vector3 view_at, GLuint shader_program, const Vector3 up = {0,0,1});
 
 
 	Vector3 view_from_; // ray origin or eye or O

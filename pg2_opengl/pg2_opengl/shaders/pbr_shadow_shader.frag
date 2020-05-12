@@ -25,16 +25,16 @@ in mat3 TBN;
 flat in int matIdx;
 
 in vec3 position_lcs;
-uniform sampler2D shadow_map; // light's shadow map
+uniform uint64_t shadow_map; // light's shadow map
 
 uniform bool ssao_enabled; // ssao active
-uniform sampler2D ssao_map; // ssao map
-uniform sampler2D ssao_noise; // ssao noise
+uniform uint64_t ssao_map; // ssao map
+uniform uint64_t ssao_noise; // ssao noise
 uniform vec3 ssao_samples[AOSamples];   // ssao samples
 
-uniform sampler2D brdf_map;
-uniform sampler2D ir_map;
-uniform sampler2D pref_env_map;
+uniform uint64_t brdf_map;
+uniform uint64_t ir_map;
+uniform uint64_t pref_env_map;
 uniform int pref_env_map_lvl;
 
 out vec4 FragColor;
@@ -107,23 +107,28 @@ vec2 SampleSphericalMap(vec3 v)
     vec2 uv = vec2(atan(v.z, v.x), asin(v.y));
     uv *= invAtan;
     uv += 0.5;
-    uv.y = 1.0 - uv.y;
     return uv;
 }
 
 vec2 BRDFIntMap(float NdV, float alfa)
 {
-    return texture(brdf_map, vec2(NdV, 1.0 - alfa)).rg;
+    if(brdf_map == 0)
+        return vec2(1, 0);
+    return texture(sampler2D(brdf_map), vec2(NdV, alfa)).rg;
 }
 
 vec3 PrefEnvMap(vec3 I, float alfa)
 {
-    return textureLod(pref_env_map, SampleSphericalMap(I), alfa * pref_env_map_lvl).rgb;
+    if(pref_env_map == 0)
+        return vec3(1);
+    return textureLod(sampler2D(pref_env_map), SampleSphericalMap(I), alfa * pref_env_map_lvl).rgb;
 }
 
 vec3 IrradianceMap(vec3 N)
 {
-    return texture(ir_map, SampleSphericalMap(N)).rgb;
+    if(ir_map == 0)
+        return vec3(1);
+    return texture(sampler2D(ir_map), SampleSphericalMap(N)).rgb;
 }
 
 float LinearizeDepth(float depth)
@@ -137,12 +142,12 @@ float LinearizeDepth(float depth)
 float ComputeOclusion(vec3 position, vec3 normal)
 {
     const vec2 noiseScale = vec2(800.0/4.0, 600.0/4.0); 
-    vec3 randomVec = texture(ssao_noise, tex*noiseScale).xyz;  
+    vec3 randomVec = texture(sampler2D(ssao_noise), tex*noiseScale).xyz;  
     vec3 tangent   = normalize(randomVec - normal * dot(randomVec, normal));
     vec3 bitangent = cross(normal, tangent);
     mat3 s_TBN       = mat3(tangent, bitangent, normal);  
 
-    vec2 ssao_texel_size = 1.0 / textureSize( ssao_map, 0 );
+    vec2 ssao_texel_size = 1.0 / textureSize(sampler2D(ssao_map), 0 );
     float occlusion = 0.0;
     vec2 radius = AORadius * ssao_texel_size;
     for(int i = 0; i < AOSamples; ++i)
@@ -162,7 +167,7 @@ float ComputeOclusion(vec3 position, vec3 normal)
                 offset.xyz  = offset.xyz * 0.5 + 0.5; // transform to range 0.0 - 1.0  
                 offset.xy += vec2(x, y) * radius;
 
-                float sampleDepth = texture(ssao_map, offset.xy).r; 
+                float sampleDepth = texture(sampler2D(ssao_map), offset.xy).r; 
                 float rangeCheck = smoothstep(0.0, 1.0, AORadius / abs(gl_FragCoord.z - sampleDepth));
                 result += ((sampleDepth >= ssao_sample.z + AOBias) ? 1.0 : 0.0) * rangeCheck;  
             }
@@ -176,7 +181,7 @@ float ComputeOclusion(vec3 position, vec3 normal)
 
 float ComputeShadows()
 {
-    vec2 shadow_texel_size = 1.0 / textureSize( shadow_map, 0 ); // size of a single texel in tex coords
+    vec2 shadow_texel_size = 1.0 / textureSize(sampler2D(shadow_map), 0 ); // size of a single texel in tex coords
     const int r = ShadowPCF; // search radius, try different values
     float shadow = 0.0; // cumulative shadowing coefficient
     for ( int y = -r; y <= r; ++y ) 
@@ -186,7 +191,7 @@ float ComputeShadows()
             // convert LCS's range <-1, 1> into TC's range <0, 1>
             vec2 a_tc = (position_lcs.xy + vec2(1.0)) * 0.5;
             a_tc += vec2(x, y) * shadow_texel_size;
-            float depth = texture(shadow_map, a_tc).r;
+            float depth = texture(sampler2D(shadow_map), a_tc).r;
             depth = depth * 2.0 - 1.0;
             shadow += (depth + ShadowBias >= position_lcs.z) ? 1.0 : ShadowAmmount;
         }
@@ -286,7 +291,12 @@ void main( void )
     vec3 ambient = (kD * LD + (kS*sb.x + sb.y)*LS) * ao; 
     vec3 color = ambient + Lo;
     color *= shadow;
-	
+	//color = vec3(shadow,0,0)*LD;
+    //color = vec3(LinearizeDepth(texture(shadow_map, (position_lcs.xy+vec2(1))*0.5).r));
+    //color = vec3(LinearizeDepth(texture(sampler2D(shadow_map), gl_FragCoord.xy/800.0).r));
+    //color = vec3(texture(sampler2D(ir_map), gl_FragCoord.xy/800.0).rgb);
+    //color = vec3(LinearizeDepth(gl_FragCoord.z));
+
     // Gamma correction
     color = color / (color + vec3(1.0));
     color = pow(color, vec3(1.0/2.2)); 

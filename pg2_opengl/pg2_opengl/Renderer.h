@@ -52,22 +52,28 @@ private:
 	bool use_shadows_{ false };	// initialized shadow buffer
 	GLuint fbo_shadow_map_{ 0 }; // shadow mapping FBO
 	GLuint tex_shadow_map_{ 0 }; // shadow map texture
+	GLuint handle_shadow_map_{ 0 };
 
 	bool use_ssao_{ false };	// initialized shadow buffer
 	GLuint fbo_ssao_map_{ 0 }; // ao mapping FBO
 	GLuint tex_ssao_map_{ 0 }; // ao map texture
 	GLuint tex_ssao_noise_{ 0 }; // ao noise texture
+	GLuint handle_ssao_map_{ 0 }; // ao map texture
+	GLuint handle_ssao_noise_{ 0 }; // ao noise texture
 
 	GLuint tex_brdf_map_{ 0 };
 	GLuint tex_env_map_{ 0 };
 	GLuint tex_ir_map_{ 0 };
+	GLuint handle_brdf_map_{ 0 };
+	GLuint handle_env_map_{ 0 };
+	GLuint handle_ir_map_{ 0 };
 
 	void PrepareSSAO();
+	void PrepareShadows();
 
 	void UpdateSSAO();
 	void UpdateShadows();
 
 	void DrawShadows();
-	void DrawSSAO();
 };
 

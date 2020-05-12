@@ -18,7 +18,7 @@
 	Update();
 }*/
 
-Camera::Camera(const int width_, const int height_, const float fov_x, const float near_y, const float far_y, const Vector3 view_from, const Vector3 view_at, GLuint shader_program)
+Camera::Camera(const int width_, const int height_, const float fov_x, const float near_y, const float far_y, const Vector3 view_from, const Vector3 view_at, GLuint shader_program, const Vector3 up)
 {
 
 	width = width_;
@@ -32,6 +32,8 @@ Camera::Camera(const int width_, const int height_, const float fov_x, const flo
 
 	n_y_ = near_y;
 	f_y_ = far_y;
+
+	up_ = up;
 
 	Update();
 }

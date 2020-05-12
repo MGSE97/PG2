@@ -14,9 +14,9 @@ in vec3 norm;
 in mat3 TBN;
 flat in int matIdx;
 
-uniform sampler2D brdf_map;
-uniform sampler2D ir_map;
-uniform sampler2D pref_env_map;
+uniform uint64_t brdf_map;
+uniform uint64_t ir_map;
+uniform uint64_t pref_env_map;
 uniform int pref_env_map_lvl;
 
 out vec4 FragColor;
@@ -89,23 +89,28 @@ vec2 SampleSphericalMap(vec3 v)
     vec2 uv = vec2(atan(v.z, v.x), asin(v.y));
     uv *= invAtan;
     uv += 0.5;
-    uv.y = 1.0 - uv.y;
     return uv;
 }
 
 vec2 BRDFIntMap(float NdV, float alfa)
 {
-    return texture(brdf_map, vec2(NdV, 1.0 - alfa)).rg;
+    if(brdf_map == 0)
+        return vec2(1, 0);
+    return texture(sampler2D(brdf_map), vec2(NdV, alfa)).rg;
 }
 
 vec3 PrefEnvMap(vec3 I, float alfa)
 {
-    return textureLod(pref_env_map, SampleSphericalMap(I), alfa * pref_env_map_lvl).rgb;
+    if(pref_env_map == 0)
+        return vec3(1);
+    return textureLod(sampler2D(pref_env_map), SampleSphericalMap(I), alfa * pref_env_map_lvl).rgb;
 }
 
 vec3 IrradianceMap(vec3 N)
 {
-    return texture(ir_map, SampleSphericalMap(N)).rgb;
+    if(ir_map == 0)
+        return vec3(1);
+    return texture(sampler2D(ir_map), SampleSphericalMap(N)).rgb;
 }
 
 void main( void )

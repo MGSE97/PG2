@@ -3,17 +3,22 @@
 #include "glutils.h"
 
 
+Vector3 fixUp(const Vector3 position, const Vector3 target)
+{
+	Vector3 up = { 0,0,1 };
+	float lvdup = (position - target).DotProduct(up);
+	if (lvdup == 0 || abs(lvdup) > 1)
+		up = { 1, 0, 0 };
+	return up;
+}
+
 Renderer::Renderer(const int width, const int height, const float fov_x, const Vector3 view_from, const Vector3 view_at, const Vector3 light_pos, std::string shader)
 {
 	Prepare();
 	PrepareShaders(&shader_program_, &vertex_shader_, &fragment_shader_, shader);
 	camera = Camera(width, height, fov_x, 0.8f, 10000.f, view_from, view_at, shader_program_);
 	light = Light(light_pos);
-
-	Vector3 up = { 0,0,1 };
-	float lvdup = (light.position_ - view_at).DotProduct(up);
-	if (lvdup == 0 || abs(lvdup) > 1)
-		up = { 1, 0, 0 };
+	auto up = fixUp(light_pos, view_at);
 	light.SetShadows(view_at, shadow_width_, shadow_height_, 0.8f, 10000.f, fov_x, up);
 	light.Update();
 }
@@ -73,6 +78,8 @@ void Renderer::UpdateShadows()
 		return;
 		camera.view_from_ = light.position_;
 		camera.view_at_ = light.target_;
+		auto up = fixUp(camera.view_from_, camera.view_at_);
+		camera.up_ = up;
 		camera.Update();
 	}
 }
@@ -85,6 +92,7 @@ void Renderer::Update()
 
 void Renderer::FinishSetup()
 {
+	PrepareShadows();
 	PrepareSSAO();
 }
 
@@ -105,8 +113,9 @@ void Renderer::LoadTexture(const char* file, TextureType type)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, texture.width(), texture.height(), 0, GL_RGB, GL_FLOAT, texture.data());
 		
 		glUseProgram(shader_program_);
-		glActiveTexture(GL_TEXTURE0 + tex_brdf_map_);
-		SetSampler(shader_program_, tex_brdf_map_, "brdf_map");
+		handle_brdf_map_ = glGetTextureHandleARB(tex_brdf_map_);
+		glMakeTextureHandleResidentARB(handle_brdf_map_);
+		SetHandle(shader_program_, handle_brdf_map_, "brdf_map");
 		break;
 	case PreFiltered_Enviroment_Map:
 		glGenTextures(1, &tex_env_map_);
@@ -122,8 +131,9 @@ void Renderer::LoadTexture(const char* file, TextureType type)
 		glGenerateTextureMipmap(tex_env_map_);
 
 		glUseProgram(shader_program_);
-		glActiveTexture(GL_TEXTURE0 + tex_env_map_);
-		SetSampler(shader_program_, tex_env_map_, "pref_env_map");
+		handle_env_map_ = glGetTextureHandleARB(tex_env_map_);
+		glMakeTextureHandleResidentARB(handle_env_map_);
+		SetHandle(shader_program_, handle_env_map_, "pref_env_map");
 		break;
 	case Irradiance_Map:
 		glGenTextures(1, &tex_ir_map_);
@@ -137,8 +147,9 @@ void Renderer::LoadTexture(const char* file, TextureType type)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, texture.width(), texture.height(), 0, GL_RGB, GL_FLOAT, texture.data());
 
 		glUseProgram(shader_program_);
-		glActiveTexture(GL_TEXTURE0 + tex_ir_map_);
-		SetSampler(shader_program_, tex_ir_map_, "ir_map");
+		handle_ir_map_ = glGetTextureHandleARB(tex_ir_map_);
+		glMakeTextureHandleResidentARB(handle_ir_map_);
+		SetHandle(shader_program_, handle_ir_map_, "ir_map");
 		break;
 	}
 }
@@ -180,18 +191,21 @@ void Renderer::LoadTextures(std::vector<const char*> files, TextureType type)
 	switch (type)
 	{
 	case BRDF_Integration_Map:
-		glActiveTexture(GL_TEXTURE0 + tex_brdf_map_);
-		SetSampler(shader_program_, tex_brdf_map_, "brdf_map");
+		handle_brdf_map_ = glGetTextureHandleARB(tex_brdf_map_);
+		glMakeTextureHandleResidentARB(handle_brdf_map_);
+		SetHandle(shader_program_, handle_brdf_map_, "brdf_map");
 		SetInt(shader_program_, level, "brdf_map_lvl");
 		break;
 	case PreFiltered_Enviroment_Map:
-		glActiveTexture(GL_TEXTURE0 + tex_env_map_);
-		SetSampler(shader_program_, tex_env_map_, "pref_env_map");
+		handle_env_map_ = glGetTextureHandleARB(tex_env_map_);
+		glMakeTextureHandleResidentARB(handle_env_map_);
+		SetHandle(shader_program_, handle_env_map_, "pref_env_map");
 		SetInt(shader_program_, level, "pref_env_map_lvl");
 		break;
 	case Irradiance_Map:
-		glActiveTexture(GL_TEXTURE0 + tex_ir_map_);
-		SetSampler(shader_program_, tex_ir_map_, "ir_map");
+		handle_ir_map_ = glGetTextureHandleARB(tex_ir_map_);
+		glMakeTextureHandleResidentARB(handle_ir_map_);
+		SetHandle(shader_program_, handle_ir_map_, "ir_map");
 		SetInt(shader_program_, level, "ir_map_lvl");
 		break;
 	}
@@ -247,6 +261,14 @@ void Renderer::PrepareSSAO()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		handle_ssao_noise_ = glGetTextureHandleARB(tex_ssao_noise_);
+		glMakeTextureHandleResidentARB(handle_ssao_noise_);
+		handle_ssao_map_ = glGetTextureHandleARB(tex_ssao_map_);
+		glMakeTextureHandleResidentARB(handle_ssao_map_);
+
+		SetHandle(shader_program_, handle_ssao_map_, "ssao_map");
+		SetHandle(shader_program_, handle_ssao_noise_, "ssao_noise");
 	}
 
 	SetBoolean(shader_program_, use_ssao_, "ssao_enabled");
@@ -282,8 +304,6 @@ void Renderer::Draw()
 	camera.Update2();*/
 	if (use_shadows_)
 		DrawShadows();
-	if (use_ssao_)
-		DrawSSAO();
 	light.Use(shader_program_, "light");
 	model->Bind();
 }
@@ -361,6 +381,10 @@ int Renderer::InitGL()
 	printf(" (%s)\n", glGetString(GL_VENDOR));
 	printf("GLSL %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
+	GLint texture_units;
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &texture_units);
+	printf("Texture units: %d\n", texture_units);
+
 	check_gl(NULL);
 
 	glEnable(GL_MULTISAMPLE);
@@ -408,21 +432,20 @@ void Renderer::DrawShadows()
 	// everything is the same except this line
 	SetMatrix4x4(shader_program_, light.MLP.data(), "mlp");
 	// and also don't forget to set the sampler of the shadow map before entering rendering loop
-	glActiveTexture(GL_TEXTURE0 + tex_shadow_map_);
+	/*glActiveTexture(GL_TEXTURE0 + tex_shadow_map_);
 	glBindTexture(GL_TEXTURE_2D, tex_shadow_map_);
-	SetSampler(shader_program_, tex_shadow_map_, "shadow_map");
+	SetSampler(shader_program_, tex_shadow_map_, "shadow_map");*/
 }
 
-void Renderer::DrawSSAO()
+void Renderer::PrepareShadows()
 {
-	glUseProgram(shader_program_);
-	glActiveTexture(GL_TEXTURE0 + tex_ssao_map_);
-	glBindTexture(GL_TEXTURE_2D, tex_ssao_map_);
-	SetSampler(shader_program_, tex_ssao_map_, "ssao_map");
-
-	glActiveTexture(GL_TEXTURE0 + tex_ssao_noise_);
-	glBindTexture(GL_TEXTURE_2D, tex_ssao_noise_);
-	SetSampler(shader_program_, tex_ssao_noise_, "ssao_noise");
+	if (use_shadows_)
+	{
+		glUseProgram(shader_program_);
+		handle_shadow_map_ = glGetTextureHandleARB(tex_shadow_map_);
+		glMakeTextureHandleResidentARB(handle_shadow_map_);
+		SetHandle(shader_program_, handle_shadow_map_, "shadow_map");
+	}
 }
 
 /* check shader for completeness */
@@ -525,7 +548,7 @@ void Renderer::InitShadowDepthbuffer()
 	use_shadows_ = true;
 	PrepareShaders(&shadow_shader_program_, &shadow_vertex_shader_, &shadow_fragment_shader_, "shaders/shadow");
 
-	glUseProgram(shader_program_); 
+	glUseProgram(shader_program_);
 }
 
 void Renderer::InitSSAODepthbuffer()

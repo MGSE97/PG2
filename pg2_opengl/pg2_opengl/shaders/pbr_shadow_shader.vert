@@ -31,8 +31,8 @@ void main( void )
 	//vec3 N = normalize(vec3(mat4(1) * vec4(normals, 1.0)));
 	
 	vec3 T = normalize(tangent);
-	vec3 N = normal;
-	vec3 B = cross(T, N);
+	vec3 N = normalize(normal);
+	vec3 B = normalize(cross(T, N));
 	if(dot(cross(T, N), B) < 0)
 		T = -T;
 	TBN = mat3(T, B, N);
