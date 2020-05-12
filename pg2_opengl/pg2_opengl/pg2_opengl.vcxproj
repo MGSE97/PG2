@@ -214,6 +214,18 @@
     <ClCompile Include="vertex.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <CustomBuild Include="inc\FreeImage.inc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">COPY "$(ProjectDir)..\..\libs\freeimage\bin\%(Filename)d.dll" "$(TargetDir)" &gt; NUL</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Copying %(Filename)d binaries to output directory...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)%(Filename)d.dll</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)..\..\libs\freeimage\bin\%(Filename)d.dll</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">COPY "$(ProjectDir)..\..\libs\freeimage\bin\%(Filename).dll" "$(TargetDir)" &gt; NUL</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Copying %(Filename) binaries to output directory...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(TargetDir)%(Filename).dll</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\..\libs\freeimage\bin\%(Filename).dll</AdditionalInputs>
+    </CustomBuild>
     <None Include="shaders\pbr_shader.frag" />
     <None Include="shaders\pbr_shader.vert" />
     <None Include="shaders\lambert_shader.frag" />

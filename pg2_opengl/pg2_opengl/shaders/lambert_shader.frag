@@ -7,6 +7,7 @@ uniform vec3 light;
 uniform vec3 eye;
 
 in vec2 tex;
+in vec3 pos;
 in vec3 norm;
 in mat3 TBN;
 flat in int matIdx;
@@ -40,7 +41,10 @@ void main( void )
 
 	vec3 normal = norm;
 	if(materials[matIdx].tex_normal > 0)
-		normal = TBN * normalize(texture(sampler2D(materials[matIdx].tex_normal), tex).rgb * 2.0 - 1.0);
+		normal = normalize(TBN * normalize(texture(sampler2D(materials[matIdx].tex_normal), tex).rgb * 2.0 - 1.0));
+	
+	if(dot(normal, eye) < 0)
+        normal = -normal;
 
-	FragColor = vec4(diffuse * max(dot(normal, light), 0), 1);
+	FragColor = vec4(diffuse * max(dot(normal, normalize(light-pos)), 0), 1);
 }

@@ -26,9 +26,6 @@ void main( void )
 {
 	gl_Position = pv * vec4(position, 1.0f); // model-space -> clip-space
 
-	//vec3 T = normalize(vec3(mat4(1) * vec4(tangent, 1.0)));
-	//vec3 B = normalize(vec3(mat4(1) * vec4(cross(tangent, normals), 1.0)));
-	//vec3 N = normalize(vec3(mat4(1) * vec4(normals, 1.0)));
 	
 	vec3 T = normalize(tangent);
 	vec3 N = normalize(normal);
@@ -44,8 +41,7 @@ void main( void )
 
 	light = lightPos;
 	eye = eyePos;
-	//light = (pv * vec4(lightPos, 1.0f)).rgb;
-	//eye = (pv * vec4(eyePos, 1.0f)).rgb;
+
 	vec4 tmp = mlp * vec4(position, 1.0);
 	position_lcs = tmp.xyz / tmp.w;
 }

@@ -73,15 +73,10 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
     return ggx1 * ggx2;
 }
 
-vec3 fresnelSchlick(float cosTheta, vec3 F0)
+vec3 Fresnel(float cosTheta, vec3 F0)
 {
     return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }  
-
-vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
-{
-    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
-}   
 
 const vec2 invAtan = vec2(0.1591, 0.3183);
 vec2 SampleSphericalMap(vec3 v)
@@ -147,7 +142,6 @@ void main( void )
     vec3 L = normalize(light - pos);
     vec3 V = normalize(eye - pos);
     vec3 H = normalize(L + V);
-    vec3 O = reflect(L, N);
     vec3 I = reflect(-V, N);
 
 	// Prepare dotproducts
@@ -155,13 +149,11 @@ void main( void )
     float HdV = max(dot(H, V), 0.0);
 	float NdV = max(dot(N, V), 0.001);
     float NdL = max(dot(N, L), 0.0);
-    float NdO = max(dot(N, O), 0.0);
 
 	// Compute fresnel
-	//vec3 F0 = mix(vec3(0.04), diffuse, metallicness);
     vec3 F0 = vec3((1 - ior) / (1 + ior));
     F0 = F0 * F0;
-    vec3 F  = fresnelSchlick(HdV, F0);   
+    vec3 F  = Fresnel(HdV, F0);   
 	
     // Reflectance equation
     // Calculate light radiance
@@ -178,7 +170,6 @@ void main( void )
     kD *= 1.0 - metallicness;	  
         
     vec3 numerator    = D * G * F;
-    //float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
     float denominator = 4.0 * NdV * NdL;
     vec3 specular     = numerator / max(denominator, 0.001);  
             
@@ -189,15 +180,9 @@ void main( void )
     vec3 LD = diffuse * IrradianceMap(N);
     vec3 LS = PrefEnvMap(I, roughness);
     vec2 sb = BRDFIntMap(NdV, roughness);
-
-//    kS = fresnelSchlick(NdV, F0);
-//    kD = vec3(1.0) - kS;
-//    kD *= 1.0 - metallicness;	  
-        
+            
     vec3 ambient = (kD * LD + (kS*sb.x + sb.y)*LS) * ao; 
     vec3 color = ambient + Lo;
-    //color *= 0;
-    //color += texture(brdf_map, tex).rgb;
 	
     // Gamma correction
     color = color / (color + vec3(1.0));

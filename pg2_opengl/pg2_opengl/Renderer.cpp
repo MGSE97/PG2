@@ -87,13 +87,11 @@ void Renderer::UpdateShadows()
 void Renderer::Update()
 {
 	UpdateShadows();
-	UpdateSSAO();
 }
 
 void Renderer::FinishSetup()
 {
 	PrepareShadows();
-	PrepareSSAO();
 }
 
 void Renderer::LoadTexture(const char* file, TextureType type)
@@ -211,97 +209,8 @@ void Renderer::LoadTextures(std::vector<const char*> files, TextureType type)
 	}
 }
 
-float lerp(float a, float b, float f)
-{
-	return a + f * (b - a);
-}
-
-void Renderer::PrepareSSAO()
-{
-	if (use_ssao_)
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, camera.width, camera.height);
-		glUseProgram(shader_program_);
-		// Prepare samples
-		std::uniform_real_distribution<float> d(0.0, 1.0);
-		std::default_random_engine g;
-		//std::vector<Vector3> samples;
-		int sample_count = 64;
-		for (unsigned int i = 0; i < sample_count; ++i)
-		{
-			Vector3 sample(
-				d(g) * 2.0 - 1.0,
-				d(g) * 2.0 - 1.0,
-				d(g)
-			);
-			sample.Normalize();
-			
-			float scale = (float)i / (float)sample_count;
-			scale = lerp(0.1f, 1.0f, scale * scale);
-			sample *= scale;
-			
-			//samples.push_back(sample);
-			SetVector3(shader_program_, sample.data, (std::string("ssao_samples[") + std::to_string(i) + "]").c_str());
-		}
-		// Prepare noise
-		std::vector<Vector3> noises;
-		for (unsigned int i = 0; i < 16; i++)
-		{
-			Vector3 noise(
-				d(g) * 2.0 - 1.0,
-				d(g) * 2.0 - 1.0,
-				0.0f);
-			noises.push_back(noise);
-		}
-		glGenTextures(1, &tex_ssao_noise_);
-		glBindTexture(GL_TEXTURE_2D, tex_ssao_noise_);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4, 4, 0, GL_RGB, GL_FLOAT, &noises[0]);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-		handle_ssao_noise_ = glGetTextureHandleARB(tex_ssao_noise_);
-		glMakeTextureHandleResidentARB(handle_ssao_noise_);
-		handle_ssao_map_ = glGetTextureHandleARB(tex_ssao_map_);
-		glMakeTextureHandleResidentARB(handle_ssao_map_);
-
-		SetHandle(shader_program_, handle_ssao_map_, "ssao_map");
-		SetHandle(shader_program_, handle_ssao_noise_, "ssao_noise");
-	}
-
-	SetBoolean(shader_program_, use_ssao_, "ssao_enabled");
-}
-
-void Renderer::UpdateSSAO()
-{
-	if (use_ssao_ && light.changed_)
-	{
-		// --- first pass ---
-		// set the shadow shader program and the viewport to match the size of the depth map
-		glUseProgram(shadow_shader_program_);
-		glViewport(0, 0, camera.width, camera.height);
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo_ssao_map_);
-		glClear(GL_DEPTH_BUFFER_BIT);
-
-		// set up the light source through the MLP matrix
-		SetMatrix4x4(shadow_shader_program_, camera.MVP.data(), "mlp");
-
-		// draw the scene
-		model->Bind();
-
-		// set back the main shader program and the viewport
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, camera.width, camera.height);
-		glUseProgram(shader_program_);
-	}
-}
-
 void Renderer::Draw()
 {
-	/*glUseProgram(shader_program_);
-	camera.Update2();*/
 	if (use_shadows_)
 		DrawShadows();
 	light.Use(shader_program_, "light");
@@ -323,7 +232,6 @@ void GLAPIENTRY gl_callback(GLenum source, GLenum type, GLuint id, GLenum severi
 		type, severity, message);
 }
 
-
 /* OpenGL check state */
 bool check_gl(const GLenum error)
 {
@@ -341,7 +249,6 @@ bool check_gl(const GLenum error)
 
 int Renderer::InitGL()
 {
-
 	glfwSetErrorCallback(glfw_callback);
 
 	if (!glfwInit())
@@ -387,8 +294,8 @@ int Renderer::InitGL()
 
 	check_gl(NULL);
 
+	glfwWindowHint(GLFW_SAMPLES, 16);
 	glEnable(GL_MULTISAMPLE);
-	//glEnable(GL_FRAMEBUFFER_SRGB);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -426,15 +333,8 @@ std::string* Renderer::LoadShader(const char* file_name)
 
 void Renderer::DrawShadows()
 {
-	glUseProgram(shader_program_);
-	/*light.SetShadows(camera.view_at_, shadow_width_, shadow_height_, 0.8f, 1000.f, camera.fov_x_);
-	light.Update();*/
-	// everything is the same except this line
-	SetMatrix4x4(shader_program_, light.MLP.data(), "mlp");
-	// and also don't forget to set the sampler of the shadow map before entering rendering loop
-	/*glActiveTexture(GL_TEXTURE0 + tex_shadow_map_);
-	glBindTexture(GL_TEXTURE_2D, tex_shadow_map_);
-	SetSampler(shader_program_, tex_shadow_map_, "shadow_map");*/
+	if(light.changed_)
+		SetMatrix4x4(shader_program_, light.MLP.data(), "mlp");
 }
 
 void Renderer::PrepareShadows()
@@ -471,7 +371,8 @@ GLint Renderer::CheckShader(const GLenum shader, const char* name)
 
 	return status;
 }
-/* check shader for completeness */
+
+/* check program for completeness */
 GLint Renderer::CheckProgram(const GLenum program)
 {
 	GLint status = 0;
@@ -547,34 +448,6 @@ void Renderer::InitShadowDepthbuffer()
 
 	use_shadows_ = true;
 	PrepareShaders(&shadow_shader_program_, &shadow_vertex_shader_, &shadow_fragment_shader_, "shaders/shadow");
-
-	glUseProgram(shader_program_);
-}
-
-void Renderer::InitSSAODepthbuffer()
-{
-	glGenTextures(1, &tex_ssao_map_); // texture to hold the depth values from the light's perspective
-	glBindTexture(GL_TEXTURE_2D, tex_ssao_map_);
-	// GL_DEPTH_COMPONENT ... each element is a single depth value. The GL converts it to floating point, multiplies by the signed scale
-	// factor GL_DEPTH_SCALE, adds the signed bias GL_DEPTH_BIAS, and clamps to the range [0, 1] – this will be important later
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, camera.width, camera.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	const float color[] = { 1.0f, 1.0f, 1.0f, 1.0f }; // areas outside the light's frustum will be lit
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	glGenFramebuffers(1, &fbo_ssao_map_); // new frame buffer
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo_ssao_map_);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, tex_ssao_map_, 0); // attach the texture as depth
-	glDrawBuffer(GL_NONE); // we dont need any color buffer during the first pass
-	glReadBuffer(GL_NONE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0); // bind the default framebuffer back
-
-	use_ssao_ = true;	// ToDo: use working solution https://learnopengl.com/Advanced-Lighting/SSAO
 
 	glUseProgram(shader_program_);
 }

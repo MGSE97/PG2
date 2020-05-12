@@ -30,13 +30,12 @@ int tutorial_2(const int width, const int height)
 {
 #if SCENE == AVANGER
 	// Avanger
-	renderer = new Renderer(width, height, deg2rad(45.0), Vector3(200, -150, 150), Vector3(0, 0, 35), Vector3(0, 0, 400), "shaders/pbr_shadow");
+	renderer = new Renderer(width, height, deg2rad(45.0), Vector3(200, -150, 150), Vector3(0, 0, 35), Vector3(0, 0, 400), "shaders/lambert");
 	//renderer = new Renderer(width, height, deg2rad(45.0), Vector3(200, -150, 150), Vector3(0, 0, 35), Vector3(0, 0, 400), "shaders/pbr");
 	renderer->LoadScene("../../data/6887/6887_allied_avenger_gi2.obj");
 	renderer->InitShadowDepthbuffer();
-	//renderer->InitSSAODepthbuffer();
 #elif SCENE == COMANDER
-	// Commander
+	// Commander (large)
 	//renderer = new Renderer(width, height, deg2rad(45.0), Vector3(320, 330, 300), Vector3(0, 0, 30), Vector3(0, 0, 600), "shaders/pbr_shadow");
 	renderer = new Renderer(width, height, deg2rad(45.0), Vector3(200, -150, 150), Vector3(0, 0, 35), Vector3(0, 0, 400), "shaders/pbr");
 	renderer->LoadScene("../../data/6986/6986_mission_commander.obj");
@@ -50,7 +49,6 @@ int tutorial_2(const int width, const int height)
 	renderer = new Renderer(width, height, deg2rad(45.0), Vector3(10, -25, 15), Vector3(2, 2, 2), Vector3(52, 103, 53), "shaders/pbr");
 	renderer->LoadScene("../../data/piece/piece_02.obj");
 	//renderer->InitShadowDepthbuffer();
-	//renderer->InitSSAODepthbuffer();
 #endif
 
 	renderer->LoadTexture("../../data/maps/brdf_integration_map_ct_ggx.exr", TextureType::BRDF_Integration_Map);
@@ -69,15 +67,24 @@ int tutorial_2(const int width, const int height)
 	
 	renderer->FinishSetup();
 
-	int i = 0;
+	int i = 3;
 	while (!glfwWindowShouldClose(renderer->window))
 	{
 		// Move camera
 		if (glfwGetMouseButton(renderer->window, 2) == GLFW_PRESS)
 		{
-			i++;
-			if (i >= 6+3) i = 0;
-			Sleep(1000);
+			if (glfwGetMouseButton(renderer->window, 0) == GLFW_PRESS)
+			{
+				i++;
+				if (i > 8) i = 0;
+				Sleep(1000);
+			}
+			else if (glfwGetMouseButton(renderer->window, 1) == GLFW_PRESS)
+			{
+				i--;
+				if (i < 0) i = 8;
+				Sleep(1000);
+			}
 		}
 		if (glfwGetMouseButton(renderer->window, 0) == GLFW_PRESS)
 		{

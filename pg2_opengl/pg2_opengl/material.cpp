@@ -186,23 +186,13 @@ void CreateBindlessTexture(GLuint64& handle, Texture3u* texture)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
 	// copy data from the host buffer
-	/*if (!texture)
-	{
-		GLubyte data[] = { 255, 255, 255, 255 }; // opaque white
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_BGRA, GL_UNSIGNED_BYTE, data);
-	}
-	else {*/
-		//if (texture->bpp() == 3)
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, texture->width(), texture->height(), 0, GL_BGR, GL_UNSIGNED_BYTE, texture->data());
-		//else if (texture->bpp() == 4)
-			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, texture->width(), texture->height(), 0, GL_BGRA, GL_UNSIGNED_BYTE, texture->data());
-	//}
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, texture->width(), texture->height(), 0, GL_BGR, GL_UNSIGNED_BYTE, texture->data());
 
 	glGenerateMipmap(GL_TEXTURE_2D); 
 
 	handle = glGetTextureHandleARB(texId); // produces a handle representing the texture in a shader function
 	glMakeTextureHandleResidentARB(handle);
-	//glActiveTexture(GL_TEXTURE0 + texId);
+
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 

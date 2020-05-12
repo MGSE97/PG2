@@ -34,6 +34,9 @@
     <Filter Include="Source Files\glad">
       <UniqueIdentifier>{c161e05c-8c04-4e6c-84b6-dd508dfd6bb8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="IncludedFiles">
+      <UniqueIdentifier>{ae0f75ed-cd4f-41e7-ba46-2d99afa116a3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -220,5 +223,10 @@
     <None Include="shaders\shadow_view_shader.vert">
       <Filter>Source Files\opengl</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="inc\FreeImage.inc">
+      <Filter>IncludedFiles</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>
