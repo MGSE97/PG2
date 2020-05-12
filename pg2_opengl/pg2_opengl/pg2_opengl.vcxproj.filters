@@ -223,6 +223,12 @@
     <None Include="shaders\shadow_view_shader.vert">
       <Filter>Source Files\opengl</Filter>
     </None>
+    <None Include="..\..\libs\freeimage\bin\FreeImage.dll">
+      <Filter>IncludedFiles</Filter>
+    </None>
+    <None Include="..\..\libs\freeimage\bin\FreeImaged.dll">
+      <Filter>IncludedFiles</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="inc\FreeImage.inc">
