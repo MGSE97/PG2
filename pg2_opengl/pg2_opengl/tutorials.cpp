@@ -8,6 +8,7 @@
 #define AVANGER 0
 #define CUBE 1
 #define PIECE 2
+#define COMANDER 3
 
 Renderer* renderer;
 
@@ -22,7 +23,8 @@ void framebuffer_resize_callback(GLFWwindow* window, int width, int height)
 
 
 #define SCENE PIECE
-//#define SCENE AVANGER
+#define SCENE AVANGER
+//#define SCENE COMANDER
 //#define SCENE CUBE
 int tutorial_2(const int width, const int height)
 {
@@ -33,6 +35,11 @@ int tutorial_2(const int width, const int height)
 	renderer->LoadScene("../../data/6887/6887_allied_avenger_gi2.obj");
 	renderer->InitShadowDepthbuffer();
 	//renderer->InitSSAODepthbuffer();
+#elif SCENE == COMANDER
+	// Commander
+	//renderer = new Renderer(width, height, deg2rad(45.0), Vector3(320, 330, 300), Vector3(0, 0, 30), Vector3(0, 0, 600), "shaders/pbr_shadow");
+	renderer = new Renderer(width, height, deg2rad(45.0), Vector3(200, -150, 150), Vector3(0, 0, 35), Vector3(0, 0, 400), "shaders/pbr");
+	renderer->LoadScene("../../data/6986/6986_mission_commander.obj");
 #elif SCENE == CUBE
 	// Cube
 	renderer = new Renderer(width, height, deg2rad(45.0), Vector3(5, 5, 5), Vector3(0, 0, 0), Vector3(200, 200, 200), "shaders/pbr");
