@@ -16,9 +16,9 @@ void main( void )
 {
 	gl_Position = pv * vec4(position, 1.0f); // model-space -> clip-space
 	
-	vec3 N = normal;
+	vec3 N = normalize(normal);
 	vec3 T = normalize(tangent);
-	vec3 B = cross(T, N);
+	vec3 B = normalize(cross(T, N));
 	if(dot(cross(T, N), B) < 0)
 		T = -T;
 	TBN = mat3(T, B, N);

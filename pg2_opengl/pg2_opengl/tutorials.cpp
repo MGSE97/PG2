@@ -119,6 +119,7 @@ int tutorial_2(const int width, const int height)
 	//renderer = new Renderer(width, height, deg2rad(45.0), Vector3(25, -25, 40), Vector3(0, 0, 4), Vector3(0, 100, 50), Vector3(0, 0, 0), "shaders/pbr_shadow");
 	//renderer = new Renderer(width, height, deg2rad(45.0), Vector3(10, -25, 15), Vector3(2, 2, 2), Vector3(52, 103, 53), Vector3(0, 0, 0), "shaders/pbr");
 	renderer = new Renderer(width, height, deg2rad(45.0), Vector3(40, -40, 20), Vector3(2, 2, 2), Vector3(52, 103, 53), Vector3(1, 1, 1), "shaders/pbr");
+	//renderer = new Renderer(width, height, deg2rad(45.0), Vector3(40, -40, 20), Vector3(2, 2, 2), Vector3(52, 103, 53), Vector3(1, 1, 1), "shaders/normal");
 	renderer->LoadScene("../../data/piece/piece_02.obj");
 #endif
 
