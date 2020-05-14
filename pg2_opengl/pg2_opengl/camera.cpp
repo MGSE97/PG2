@@ -92,12 +92,11 @@ void Camera::Update()
 	SetVector3(shader_program_, view_from_.data, "eye");
 }
 
-void Camera::MoveForward( const float dt )
+void Camera::RotateAround( const float angle )
 {
-	Vector3 ds = view_at_ - view_from_;
-	ds.Normalize();
-	ds *= dt;
+	double x = cosf(angle);
+	double y = sinf(angle);
+	view_from_ = (view_from_ * x) + (view_from_.CrossProduct(up_) * y) + (up_ * up_.DotProduct(view_from_)) * (1 - x);
 
-	view_from_ += ds;
-	view_at_ += ds;
+	Update();
 }

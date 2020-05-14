@@ -4,13 +4,14 @@
 
 #define PI 3.14159265359
 
-#define LightDistanceDevider 200.0
+#define LightDistanceDevider 500.0
 
 #define ShadowBias 0.0001
 #define ShadowAmmount 0.1
 #define ShadowPCF 5
 
 uniform vec3 light;
+uniform vec3 light_color;
 uniform vec3 eye;
 uniform mat4 pv;
 
@@ -193,7 +194,7 @@ void main( void )
     // Calculate light radiance
     float distance    = length(light - pos) / LightDistanceDevider;
     float attenuation = 1.0 / (distance * distance);
-    vec3 radiance     = vec3(1) * attenuation;        
+    vec3 radiance     = light_color * attenuation;        
         
     // Cook-Torrance brdf
     float D = DistributionGGX(N, H, roughness);        

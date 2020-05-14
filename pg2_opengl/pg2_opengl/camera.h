@@ -32,7 +32,7 @@ public:
 
 	void Update();
 
-	void MoveForward(const float dt);
+	void RotateAround(const float angle);
 
 	GLuint shader_program_;
 

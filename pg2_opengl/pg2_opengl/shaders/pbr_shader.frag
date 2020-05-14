@@ -3,9 +3,10 @@
 #extension GL_ARB_gpu_shader_int64 : require
 
 #define PI 3.14159265359
-#define LightDistanceDevider 200.0
+#define LightDistanceDevider 500.0
 
 uniform vec3 light;
+uniform vec3 light_color;
 uniform vec3 eye;
 
 in vec3 pos;
@@ -159,7 +160,7 @@ void main( void )
     // Calculate light radiance
     float distance    = length(light - pos) / LightDistanceDevider;
     float attenuation = 1.0 / (distance * distance);
-    vec3 radiance     = vec3(1) * attenuation;        
+    vec3 radiance     = light_color * attenuation;        
         
     // Cook-Torrance brdf
     float D = DistributionGGX(N, H, roughness);        

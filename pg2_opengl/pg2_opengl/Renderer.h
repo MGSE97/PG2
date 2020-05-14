@@ -10,7 +10,7 @@ enum TextureType {BRDF_Integration_Map, PreFiltered_Enviroment_Map, Irradiance_M
 class Renderer
 {
 public:
-	Renderer(const int width, const int height, const float fov_y, const Vector3 view_from, const Vector3 view_at, const Vector3 light_pos, std::string shader);
+	Renderer(const int width, const int height, const float fov_y, const Vector3 view_from, const Vector3 view_at, const Vector3 light_pos, const Vector3 light_col, std::string shader);
 	~Renderer();
 
 	void Prepare();

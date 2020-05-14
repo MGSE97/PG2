@@ -2,42 +2,27 @@
 #include "light.h"
 #include "glutils.h"
 
-Light::Light(float x, float y, float z)
-{
-	position_ = { x, y, z };
-	changed_ = true;
-}
 
-Light::Light(Vector3 p)
+Light::Light(Vector3 p, Vector3 l)
 {
 	position_ = p;
+	color_ = l;
 	changed_ = true;
 }
 
-Vector3 Light::Get()
-{
-	return position_;
-}
-
-Vector3 Light::Set(float x, float y, float z)
-{
-	position_ = { x, y, z };
-	changed_ = true;
-	return position_;
-}
-
-Vector3 Light::Set(Vector3 p)
+void Light::Set(Vector3 p, Vector3 l)
 {
 	position_ = p;
+	color_ = l;
 	changed_ = true;
-	return position_;
 }
 
-void Light::Use(GLuint program, const char* name)
+void Light::Use(GLuint program, const char* name_pos, const char* name_col)
 {
 	if (changed_)
 	{
-		SetVector3(program, position_.data, name);
+		SetVector3(program, position_.data, name_pos);
+		SetVector3(program, color_.data, name_col);
 		changed_ = false;
 	}
 }

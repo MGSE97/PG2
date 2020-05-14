@@ -7,12 +7,9 @@ class Light
 {
 public:
 	Light() {};
-	Light(float x, float y, float z);
-	Light(Vector3 p);
-	Vector3 Get();
-	Vector3 Set(float x, float y, float z);
-	Vector3 Set(Vector3 p);
-	void Use(GLuint program, const char* name);
+	Light(Vector3 p, Vector3 l);
+	void Set(Vector3 p, Vector3 l);
+	void Use(GLuint program, const char* name_pos, const char* name_col);
 
 	void SetShadows(Vector3 target, int width, int height, float near_, float far_, float fov_x, Vector3 up);
 	void Update();
@@ -25,6 +22,7 @@ public:
 	float n_y_{ 0.0f }; // focal near lenght (px)
 	Vector3 up_{ Vector3(0.0f, 0.0f, 1.0f) }; // up vector
 	Vector3 position_;
+	Vector3 color_;
 	Vector3 target_;
 
 	Matrix4x4 MLP;

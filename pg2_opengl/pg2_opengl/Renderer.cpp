@@ -12,12 +12,12 @@ Vector3 fixUp(const Vector3 position, const Vector3 target)
 	return up;
 }
 
-Renderer::Renderer(const int width, const int height, const float fov_x, const Vector3 view_from, const Vector3 view_at, const Vector3 light_pos, std::string shader)
+Renderer::Renderer(const int width, const int height, const float fov_x, const Vector3 view_from, const Vector3 view_at, const Vector3 light_pos, const Vector3 light_col, std::string shader)
 {
 	Prepare();
 	PrepareShaders(&shader_program_, &vertex_shader_, &fragment_shader_, shader);
 	camera = Camera(width, height, fov_x, 0.8f, 10000.f, view_from, view_at, shader_program_);
-	light = Light(light_pos);
+	light = Light(light_pos, light_col);
 	auto up = fixUp(light_pos, view_at);
 	light.SetShadows(view_at, shadow_width_, shadow_height_, 0.8f, 10000.f, fov_x, up);
 	light.Update();
@@ -211,10 +211,18 @@ void Renderer::LoadTextures(std::vector<const char*> files, TextureType type)
 
 void Renderer::Draw()
 {
+	// Drawing loop
+	glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // state setting function
+	glClearColor(0.f, 0.f, 0.f, 0.f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // state using function
+
 	if (use_shadows_)
 		DrawShadows();
-	light.Use(shader_program_, "light");
+	light.Use(shader_program_, "light", "light_color");
 	model->Bind();
+
+	glfwSwapBuffers(window);
+	glfwPollEvents();
 }
 
 
