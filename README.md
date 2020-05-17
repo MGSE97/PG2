@@ -27,7 +27,7 @@ Computer Graphics 2. OpenGL rendering engine.
 
 ### Scenes
 
-Active scene can be changed in file [tutorials.cpp](pg2_opengl/pg2_opengl/tutorial.cpp) by setting `#define SCENE` to scene value.
+Active scene can be changed in file [tutorials.cpp](pg2_opengl/pg2_opengl/tutorials.cpp) by setting `#define SCENE` to scene value.
 For simplicity just uncomment line above `tutorial_2` method.           
 
 #### Cube                           
@@ -47,7 +47,7 @@ Shadow mapping and multiple meshes loading.
 
 |Left side|Right side|
 |:--|--:|
-|[](results/avanger_l.png)|[](results/avanger_r.png)|
+|<img src="results/avanger_l.png" width="640px" height="360px"/>|<img src="results/avanger_r.png" width="640px" height="360px"/>|
 
 #### Piece
 
@@ -57,8 +57,7 @@ PBR, IBL rendering. Normal mapping. RMA mapping.
 
 |Ambient lighting|Roughness & normals|Direct lighting|
 |:--|---|--:|
-|[](results/piece_ambient.png)|[](results/piece_direct_light_2.png)|[](results/piece_direct_light.png)|
-
+|<img src="results/piece_ambient.png" width="426px" height="240px"/>|<img src="results/piece_direct_light_2.png" width="426px" height="240px"/>|<img src="results/piece_direct_light.png" width="426px" height="240px"/>|
 
 ### Shaders
 
@@ -74,7 +73,7 @@ All shaders are loaded from [shaders directory](pg2_opengl/pg2_opengl/shaders).
 
 ### Controls
 
-All scene changes are controled in [tutorials.cpp](pg2_opengl/pg2_opengl/tutorial.cpp) file in method `handle_inputs`.
+All scene changes are controled in [tutorials.cpp](pg2_opengl/pg2_opengl/tutorials.cpp) file in method `handle_inputs`.
 
 - Camera rotation to left is activated by default
 - You can change camera position, target, light position by controls bellow
