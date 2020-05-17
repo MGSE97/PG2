@@ -37,6 +37,9 @@
     <Filter Include="IncludedFiles">
       <UniqueIdentifier>{ae0f75ed-cd4f-41e7-ba46-2d99afa116a3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ResultsFiles">
+      <UniqueIdentifier>{c12bac57-237c-44ba-8b5c-b063393a66d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -229,6 +232,7 @@
     <None Include="..\..\libs\freeimage\bin\FreeImaged.dll">
       <Filter>IncludedFiles</Filter>
     </None>
+    <None Include="..\..\README.md" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="inc\FreeImage.inc">

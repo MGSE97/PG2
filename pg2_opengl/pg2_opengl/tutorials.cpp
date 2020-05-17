@@ -85,7 +85,11 @@ void handle_inputs(Renderer* renderer, int& i)
 			renderer->light.position_.z--;
 	}
 	printf("\r%d > %f %f %f, %f %f %f, %f %f %f", i, renderer->camera.view_at_.x, renderer->camera.view_at_.y, renderer->camera.view_at_.z, renderer->camera.view_from_.x, renderer->camera.view_from_.y, renderer->camera.view_from_.z, renderer->light.position_.x, renderer->light.position_.y, renderer->light.position_.z);
+	
+	// Camra rotation
 	renderer->camera.RotateAround(0.005);
+
+	// Scene updates
 	//renderer->camera.Update();
 	renderer->light.Update();
 	renderer->Update();
@@ -123,6 +127,7 @@ int tutorial_2(const int width, const int height)
 	renderer->LoadScene("../../data/piece/piece_02.obj");
 #endif
 
+	// IBL rendering
 	renderer->LoadTexture("../../data/maps/brdf_integration_map_ct_ggx.exr", TextureType::BRDF_Integration_Map);
 	renderer->LoadTexture("../../data/maps/lebombo_irradiance_map.exr", TextureType::Irradiance_Map);
 	renderer->LoadTextures({
@@ -135,10 +140,13 @@ int tutorial_2(const int width, const int height)
 		"../../data/maps/lebombo_prefiltered_env_map_999_32.exr"
 		}, TextureType::PreFiltered_Enviroment_Map);
 
+	// Callbacks
 	glfwSetFramebufferSizeCallback(renderer->window, framebuffer_resize_callback);
 	
+	// Finalize
 	renderer->FinishSetup();
 
+	// Rendering loop
 	int i = 3;
 	while (!glfwWindowShouldClose(renderer->window))
 	{
@@ -146,6 +154,7 @@ int tutorial_2(const int width, const int height)
 		renderer->Draw();
 		Sleep(10);
 	}
+
 	delete renderer;
 	return EXIT_SUCCESS;
 }

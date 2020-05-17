@@ -6,6 +6,7 @@
 #include "glutils.h"
 #include <glad\glad.h>
 
+// Not used, may be usefull in future
 class Transform
 {
 public:

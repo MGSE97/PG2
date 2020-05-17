@@ -15,9 +15,6 @@ class Camera
 {
 public:
 	Camera() { }
-
-	/*Camera(const int width, const int height, const float fov_x,
-		const Vector3 view_from, const Vector3 view_at, GLuint shader_program);*/
 	
 	Camera(const int width, const int height, const float fov_x,
 		const float near_y, const float far_y,
@@ -52,9 +49,6 @@ public:
 	Vector3 up_{ Vector3(0.0f, 0.0f, 1.0f) }; // up vector
 private:
 	float fov_y_{ 0.785f }; // vertical field of view (rad)
-	
-	/*Vector3 view_from_; // ray origin or eye or O
-	Vector3 view_at_; // target T*/
 };
 
 #endif

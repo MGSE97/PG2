@@ -4,6 +4,7 @@
 #define NOMINMAX
 #define _CRT_SECURE_NO_WARNINGS
 
+// Print errors to console
 #define VERBOSE false
 
 // std libs
