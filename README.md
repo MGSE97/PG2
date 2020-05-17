@@ -47,7 +47,7 @@ Shadow mapping and multiple meshes loading.
 
 |Left side|Right side|
 |:--|--:|
-|<img src="results/avanger_l.png" width="640px" height="360px"/>|<img src="results/avanger_r.png" width="640px" height="360px"/>|
+|<img src="results/avanger_l.png" width="450px" height="253px"/>|<img src="results/avanger_r.png" width="450px" height="253px"/>|
 
 #### Piece
 
@@ -57,7 +57,7 @@ PBR, IBL rendering. Normal mapping. RMA mapping.
 
 |Ambient lighting|Roughness & normals|Direct lighting|
 |:--|---|--:|
-|<img src="results/piece_ambient.png" width="426px" height="240px"/>|<img src="results/piece_direct_light_2.png" width="426px" height="240px"/>|<img src="results/piece_direct_light.png" width="426px" height="240px"/>|
+|<img src="results/piece_ambient.png" width="300px" height="168px"/>|<img src="results/piece_direct_light_2.png" width="300px" height="168px"/>|<img src="results/piece_direct_light.png" width="300px" height="168px"/>|
 
 ### Shaders
 
