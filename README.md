@@ -2,16 +2,32 @@
 
 Computer Graphics 2. OpenGL rendering engine.
 
-### Requirements
-
-- Nvidia GPU (Bindless textures)
-- OpenGL 4.4+             
-
-### Instalation
+## Getting Started
 
 1. Download this repository
 2. Open [solution](pg2_opengl/pg2_opengl.sln)  
 3. Build & Run
+
+### Prerequisites
+
+Hardware:
+* Nvidia GPU (Bindless textures)
+
+Software:
+* [OpenGL 4.4+](https://www.opengl.org/) *included* - Graphical library
+* [FreeImage](https://freeimage.sourceforge.io/) *included* - Image processing library
+* [ImGui](https://github.com/ocornut/imgui) *included* - GUI library
+
+IDE:
+* [Visual Studio 2019](https://visualstudio.microsoft.com/cs/vs/)
+
+### Solution
+
+Solution contains only one project.
+
+## Description
+
+Written in C++.
 
 ### Features
 
@@ -105,3 +121,13 @@ Parameters values are printed in console.
 |6|Light position X|
 |7|Light position Y|
 |8|Light position Z|
+
+## Author
+
+* [**MGSE97**](https://github.com/MGSE97)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.txt) file for details.
+
+Additional libraries licenses are included in [libs](libs) folder.
